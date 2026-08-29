@@ -40,38 +40,39 @@ class LLMService:
         topic: str,
         weak_words: List[str]
     ) -> Dict[str, Any]:
-        """Calls OpenAI GPT-5.6 Luna API with structured prompt."""
-        client = OpenAI(api_key=settings.OPENAI_API_KEY, timeout=3.0)
+        """Calls OpenAI API with strict JSON schema and robust parsing for all CEFR levels (A1 to C1)."""
+        client = OpenAI(api_key=settings.OPENAI_API_KEY, timeout=4.0)
 
         weak_words_str = ", ".join(weak_words) if weak_words else "none"
 
+        level_guidance = {
+            "A1": "Beginner level: Simple basic grammar (e.g. Present Simple), daily life words, 4-6 words.",
+            "A2": "Elementary level: Past simple, basic conjunctions, 5-7 words.",
+            "B1": "Intermediate level: Future forms, modal verbs, present perfect, 6-8 words.",
+            "B2": "Upper-intermediate: Conditionals, passive voice, phrasal verbs, 7-9 words.",
+            "C1": "Advanced level: Sophisticated vocabulary, subjunctive/inversion, nuanced idioms, 7-10 words."
+        }.get(level.upper(), "Adaptive CEFR English sentence, 5-9 words.")
+
         system_prompt = (
-            "You are an expert adaptive English language curriculum engine. "
-            "Your task is to generate ONE engaging, natural Uzbek sentence and its precise grammatically correct English translation. "
-            "You must return ONLY a valid JSON object without markdown fences, matching the requested schema."
+            "You are an expert English language educational engine. "
+            "Your output must be a single valid JSON object with the exact keys: "
+            "'topic', 'source_text' (in natural Uzbek), 'target_text' (in grammatically correct English), and 'words' (array of English word tokens in exact sequence). "
+            "Do NOT include any commentary, explanations, or text outside the JSON object."
         )
 
-        user_prompt = f"""
-Generate an English sentence for an adaptive sentence reconstruction game.
-- Target CEFR Level: {level}
-- Target Difficulty Score: {difficulty:.2f} (0.00 is simplest A1, 1.00 is advanced C1)
-- Topic preference: {topic}
-- Priority vocabulary to include naturally if possible: [{weak_words_str}]
+        user_prompt = f"""Generate an English-Uzbek learning pair for an adaptive puzzle game.
+- CEFR Level: {level.upper()} ({level_guidance})
+- Difficulty Metric: {difficulty:.2f}
+- Topic: {topic}
+- Priority words to include if suitable: [{weak_words_str}]
 
-CRITICAL REQUIREMENTS:
-1. The English sentence must match {level} level grammatical structures.
-2. The Uzbek sentence must be a natural, idiomatic translation of the English sentence.
-3. Sentence length should be between 4 and 10 words.
-4. Words must only contain alphabetic characters (remove trailing punctuation in word tokens).
-
-Return ONLY JSON:
+Output format strictly adhering to JSON:
 {{
   "topic": "{topic}",
-  "source_text": "Uzbek sentence here",
-  "target_text": "English sentence here.",
-  "words": ["Word1", "Word2", "Word3", "Word4"]
-}}
-"""
+  "source_text": "Tabiiy o'zbekcha gap shu yerga yoziladi.",
+  "target_text": "Natural and precise English translation here.",
+  "words": ["Natural", "and", "precise", "English", "translation", "here"]
+}}"""
 
         response = client.chat.completions.create(
             model=settings.OPENAI_MODEL,
@@ -79,23 +80,37 @@ Return ONLY JSON:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
-            max_completion_tokens=400
+            response_format={"type": "json_object"},
+            max_completion_tokens=800
         )
 
-        raw_content = response.choices[0].message.content.strip()
-        cleaned_json = re.sub(r"^```json\s*", "", raw_content)
-        cleaned_json = re.sub(r"^```\s*", "", cleaned_json)
-        cleaned_json = re.sub(r"\s*```$", "", cleaned_json).strip()
+        raw_content = response.choices[0].message.content or ""
+        raw_content = raw_content.strip()
 
-        data = json.loads(cleaned_json)
+        # Robust JSON extraction
+        json_match = re.search(r"\{.*\}", raw_content, re.DOTALL)
+        if json_match:
+            data = json.loads(json_match.group(0))
+        else:
+            data = json.loads(raw_content)
 
+        source_text = data.get("source_text", "").strip()
+        target_text = data.get("target_text", "").strip()
+
+        # Extract and sanitize words
         raw_words = data.get("words", [])
+        if not raw_words and target_text:
+            raw_words = target_text.split()
+
         clean_words = [re.sub(r"[^a-zA-Z0-9'-]", "", w) for w in raw_words if re.sub(r"[^a-zA-Z0-9'-]", "", w)]
+
+        if not source_text or not target_text or len(clean_words) < 2:
+            raise ValueError(f"Invalid generated sentence structure: {data}")
 
         return {
             "topic": data.get("topic", topic),
-            "source_text": data.get("source_text"),
-            "target_text": data.get("target_text"),
+            "source_text": source_text,
+            "target_text": target_text,
             "words": clean_words
         }
 
