@@ -1,7 +1,8 @@
 """Main FastAPI Application Entry Point."""
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from backend.config import settings
 from backend.database import engine, Base
@@ -32,9 +33,12 @@ run_migrations()
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    version="2.0.0",
-    description="Adaptive English Sentence Reconstruction Game with Letter Matrix (Boggle/Word Hunt Swipe Mechanics)"
+    version="2.1.0",
+    description="Adaptive English Sentence Reconstruction Game with Letter Matrix"
 )
+
+# GZip compression (reduces payload size by up to 80% on 0.1 CPU)
+app.add_middleware(GZipMiddleware, minimum_size=500)
 
 # CORS Configuration
 app.add_middleware(
@@ -51,10 +55,23 @@ app.include_router(game.router)
 app.include_router(progress.router)
 app.include_router(settings_router.router)
 
-# Mount frontend static files
+# Mount frontend static files with client caching headers
 frontend_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
 if os.path.exists(frontend_path):
-    app.mount("/", StaticFiles(directory=frontend_path, html=True), name="frontend")
+    class CachedStaticFiles(StaticFiles):
+        async def get_response(self, path: str, scope):
+            response = await super().get_response(path, scope)
+            if response.status_code == 200:
+                response.headers["Cache-Control"] = "public, max-age=1800"
+            return response
+
+    app.mount("/", CachedStaticFiles(directory=frontend_path, html=True), name="frontend")
+
+
+@app.get("/api/ping")
+def ping():
+    """Ultra-fast keep-alive ping for 0.1 CPU server."""
+    return {"ping": "pong"}
 
 
 @app.get("/api/health")
