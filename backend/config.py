@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     
     # OpenAI config
     OPENAI_API_KEY: Optional[str] = os.getenv("OPENAI_API_KEY", None)
+    OPENAI_BASE_URL: Optional[str] = os.getenv("OPENAI_BASE_URL", None)
     OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-5.6-luna")
     
     # Levels

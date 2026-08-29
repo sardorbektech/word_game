@@ -78,7 +78,14 @@ class LLMService:
         recent_sentences: List[str]
     ) -> Dict[str, Any]:
         """Calls OpenAI API with strict JSON schema and dynamic context to prevent repetitive sentences."""
-        client = OpenAI(api_key=settings.OPENAI_API_KEY, timeout=4.0)
+        client_kwargs = {
+            "api_key": settings.OPENAI_API_KEY,
+            "timeout": 4.5
+        }
+        if settings.OPENAI_BASE_URL and settings.OPENAI_BASE_URL.strip():
+            client_kwargs["base_url"] = settings.OPENAI_BASE_URL.strip()
+
+        client = OpenAI(**client_kwargs)
 
         weak_words_str = ", ".join(weak_words) if weak_words else "none"
         scenario = random.choice(DIVERSE_SCENARIOS)
