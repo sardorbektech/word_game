@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adaptive English - Letter Matrix Reconstruction Game</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=2.2.3">
+</head>
+<body>
+
+  <!-- Top App Navigation Header -->
+  <header class="app-header">
+    <div class="brand" id="brand-logo">
+      <div class="brand-icon">⚡</div>
+      <div class="brand-title">Adaptive English Matrix</div>
+    </div>
+
+    <div class="header-status">
+      <div class="badge badge-level" id="header-level-badge">🏆 A1</div>
+      <div class="badge badge-source badge-source-dataset game-source-badge" id="header-source-badge">⚪ AI Offline</div>
+      <div class="badge badge-difficulty" id="game-difficulty-badge" style="display: none;">⚡ Dif: 0.35</div>
+      <div class="badge badge-topic" id="game-topic-badge" style="display: none;">📌 General</div>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn-icon" id="btn-weak-words" title="Zaif so'zlar (SRS)">⭐</button>
+      <button class="btn-icon" id="btn-settings" title="Sozlamalar">⚙️</button>
+      <div class="badge" id="user-name-badge" style="font-size: 12px;">👤 Guest</div>
+      <button class="btn-icon" id="btn-logout" title="Akkauntdan chiqish" style="color: var(--accent-red);">🚪</button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-container">
+
+    <!-- Screen 1: Dashboard & Level Selection -->
+    <section class="screen-view active" id="screen-dashboard">
+      <div class="dashboard-hero">
+        <h1 class="hero-title">Ingliz Tili Gap Tuzish O'yini</h1>
+        <p class="hero-subtitle">
+          O'zbekcha gapning inglizcha tarjimasini harflar matritsasidan grammatik to'g'ri ketma-ketlikda yig'ing! AI sizning bilimingizga moslashadi.
+        </p>
+
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-value" id="stat-current-level">A1</div>
+            <div class="stat-label">Joriy Level</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="stat-total-games">0</div>
+            <div class="stat-label">O'ynalgan O'yinlar</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="stat-weak-words">0</div>
+            <div class="stat-label">Zaif So'zlar</div>
+          </div>
+        </div>
+      </div>
+
+      <h2 style="font-size: 20px; font-weight: 700; margin-top: 10px;">Darajani Tanlang:</h2>
+      <div class="levels-grid" id="levels-grid">
+        <!-- Injected via JavaScript -->
+      </div>
+    </section>
+
+    <!-- Screen 2: Game Arena -->
+    <section class="screen-view" id="screen-game">
+      <div class="game-arena">
+        
+        <!-- Source Uzbek Sentence Card -->
+        <div class="sentence-card">
+          <div class="sentence-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <div class="sentence-label">🇺🇿 O'zbekcha Ma'nosi:</div>
+              <div class="badge badge-source badge-source-dataset game-source-badge" id="arena-source-badge">⚪ AI Offline</div>
+            </div>
+            <button class="btn btn-danger" style="padding: 6px 14px; font-size: 13px; font-weight: 700;" onclick="window.exitCurrentGame()" title="O'yindan chiqish va Dashboardga qaytish">
+              🚪 O'yindan Chiqish
+            </button>
+          </div>
+          <div class="source-sentence" id="source-sentence">
+            Yuklanmoqda...
+          </div>
+        </div>
+
+        <!-- Target Grammatical Assembly Bar -->
+        <div class="assembly-bar" id="assembly-bar">
+          <!-- Injected slots: [ I ] [ drink ] [ _ _ _ _ ] -->
+        </div>
+
+        <!-- Live Swiped Letters Tray -->
+        <div class="live-tray">
+          <div class="live-swiped-text" id="live-swiped-text">
+            <span style="color: var(--text-dim); font-size: 14px; font-weight: 500;">So'zni barmoq/sichqoncha bilan ulab toping...</span>
+          </div>
+          <div class="tray-hint">4 tomonga ulang (o'ng, chap, yuqori, past)</div>
+        </div>
+
+        <!-- Letter Matrix Grid Area -->
+        <div class="matrix-wrapper" id="matrix-wrapper">
+          <svg class="svg-overlay" id="svg-overlay"></svg>
+          <div class="matrix-grid" id="matrix-grid">
+            <!-- Dynamic Grid Tiles -->
+          </div>
+        </div>
+
+        <!-- HUD Controls & Timer -->
+        <div class="game-hud">
+          <div class="hud-timer" id="timer-display">⏱️ 00:00</div>
+          <div class="hud-buttons">
+            <button class="btn btn-warning" id="btn-learn-word" title="Ushbu so'zni zaif deb belgilash">
+              ⭐ Learn this
+            </button>
+            <button class="btn btn-secondary" id="btn-pause">
+              ⏸️ Pauza
+            </button>
+            <button class="btn btn-danger" id="btn-exit-game" onclick="window.exitCurrentGame()" title="O'yinni to'xtatish va chiqish">
+              🚪 Chiqish
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==========================================================================
+       MODALS & OVERLAYS
+       ========================================================================== -->
+
+  <!-- 1. Authentication Modal -->
+  <div class="modal-overlay" id="auth-modal">
+    <div class="modal-card">
+      <div class="modal-title">Xush kelibsiz! 👋</div>
+      <p style="text-align: center; color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">
+        Progressingiz va moslashuvchan qiyinlik darajangiz saqlanishi uchun profilingizga kiring.
+      </p>
+
+      <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+        <button class="btn btn-primary" id="tab-login" style="flex: 1;">Kirish</button>
+        <button class="btn btn-secondary" id="tab-register" style="flex: 1;">Ro'yxatdan o'tish</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="form-login" style="display: flex; flex-direction: column; gap: 14px;">
+        <div class="form-group">
+          <label class="form-label">Foydalanuvchi nomi</label>
+          <input type="text" class="form-input" id="login-username" required placeholder="Masalan: jasur">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Parol</label>
+          <input type="password" class="form-input" id="login-password" required placeholder="••••••••">
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin-top: 10px;">Kirish</button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="form-register" style="display: none; flex-direction: column; gap: 14px;">
+        <div class="form-group">
+          <label class="form-label">Yangi foydalanuvchi nomi</label>
+          <input type="text" class="form-input" id="reg-username" required placeholder="Masalan: jasur">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Parol (kamida 4 ta belgi)</label>
+          <input type="password" class="form-input" id="reg-password" required placeholder="••••••••">
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin-top: 10px;">Ro'yxatdan o'tish</button>
+      </form>
+
+      <div id="auth-error" style="color: var(--accent-red); font-size: 13px; text-align: center; margin-top: 12px;"></div>
+    </div>
+  </div>
+
+  <!-- 2. Pause Modal -->
+  <div class="modal-overlay" id="pause-modal">
+    <div class="modal-card" style="text-align: center;">
+      <div style="font-size: 48px; margin-bottom: 10px;">⏸️</div>
+      <div class="modal-title">O'yin To'xtatildi</div>
+      <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 24px;">
+        Pauza vaqti hisobingizga qo'shilmaydi. Tayyor bo'lsangiz davom eting!
+      </p>
+      <button class="btn btn-primary" id="btn-resume" style="width: 100%; padding: 14px;">
+        ▶️ Davom ettirish
+      </button>
+    </div>
+  </div>
+
+  <!-- 3. Round Result / Victory Modal -->
+  <div class="modal-overlay" id="result-modal">
+    <div class="modal-card" style="text-align: center;">
+      <div style="font-size: 48px; margin-bottom: 10px;">🎉</div>
+      <div class="modal-title">Gap To'liq Yig'ildi!</div>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0;">
+        <div class="stat-box">
+          <div class="stat-value" id="res-accuracy">100%</div>
+          <div class="stat-label">Aniqlik</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="res-time">8.4s</div>
+          <div class="stat-label">Faol Vaqt</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="res-mistakes">0</div>
+          <div class="stat-label">Xatolar</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="res-difficulty">0.40</div>
+          <div class="stat-label">Yangi Qiyinlik</div>
+        </div>
+      </div>
+
+      <p id="res-feedback" style="color: var(--accent-cyan); font-size: 14px; font-weight: 600; margin-bottom: 20px;">
+        Ajoyib natija!
+      </p>
+
+      <button class="btn btn-primary" id="btn-next-round" style="width: 100%; padding: 14px; font-size: 16px;">
+        Keyingi Raund ➔
+      </button>
+    </div>
+  </div>
+
+  <!-- 4. Weak Words & SRS Modal -->
+  <div class="modal-overlay" id="weak-words-modal">
+    <div class="modal-card">
+      <div class="modal-title">⭐ Zaif So'zlar (SRS)</div>
+      <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">
+        Ushbu so'zlar keyingi o'yinlarda AI tomonidan avtomatik takrorlanadi.
+      </p>
+
+      <div class="weak-words-list" id="weak-words-container">
+        <!-- Injected items -->
+      </div>
+
+      <button class="btn btn-secondary" style="width: 100%; margin-top: 20px;" onclick="window.app.closeModal('weak-words-modal')">
+        Yopish
+      </button>
+    </div>
+  </div>
+
+  <!-- 5. Settings Modal -->
+  <div class="modal-overlay" id="settings-modal">
+    <div class="modal-card">
+      <div class="modal-title">⚙️ O'yin Sozlamalari</div>
+      
+      <form id="form-settings" style="display: flex; flex-direction: column; gap: 16px;">
+        <div class="form-group">
+          <label class="form-label">Harflar Matritsasi O'lchami</label>
+          <div style="font-size: 13px; color: var(--accent-cyan); padding: 8px 12px; background: rgba(0, 242, 254, 0.1); border-radius: var(--radius-sm); border: 1px solid rgba(0, 242, 254, 0.25);">
+            ⚡ Matritsa o'lchami har bir darajaga qarab avtomatik kengayadi (A1: 6×6, A2: 7×7, B1: 8×8, B2: 9×9, C1: 10×10).
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Qiziqish Mavzusi</label>
+          <select class="form-select" id="settings-topic">
+            <option value="General">General (Umumiy)</option>
+            <option value="Technology">Technology & IT</option>
+            <option value="AI News">AI News & Science</option>
+            <option value="Uzbekistan">Uzbekistan Facts</option>
+            <option value="Germany">Germany Facts</option>
+            <option value="Daily Life">Daily Life</option>
+          </select>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0;">
+          <span style="font-size: 14px; font-weight: 600;">Ovoz effektlari</span>
+          <input type="checkbox" id="settings-sound" checked style="width: 20px; height: 20px;">
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+          <button type="submit" class="btn btn-primary" style="flex: 1;">Saqlash</button>
+          <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="window.app.closeModal('settings-modal')">Bekor qilish</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts with cache busters -->
+  <script src="js/api.js?v=2.2.5"></script>
+  <script src="js/audio.js?v=2.2.5"></script>
+  <script src="js/matrix_game.js?v=2.2.5"></script>
+  <script src="js/app.js?v=2.2.5"></script>
+</body>
+</html>

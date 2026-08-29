@@ -1,0 +1,1255 @@
+Ha, javoblaringiz asosida loyiha konsepsiyasi ancha aniq bo‘ldi. Quyida men avval **bitta muhim texnik muammoni** tuzatib olaman, keyin siz so‘ragan **asosiy arxitektura va o‘yin jarayoni**ni AI coding agentga berishga tayyor formatda yozaman.
+
+> **Muhim:** siz tanlagan `GPT-5.6 Luna` hozir OpenAI API’da mavjud va uning API model ID'si `gpt-5.6-luna`. U yuqori hajmdagi, xarajatga sezgir workloadlar uchun mo‘ljallangan. ([OpenAI Developers][1])
+
+## 1. Netlify + SQLite bo‘yicha muhim tuzatish
+
+Siz:
+
+* Frontend → Netlify
+* Backend → FastAPI
+* Database → SQLite
+* hammasi Netlify
+
+deb belgiladingiz.
+
+Bu yerda **SQLite bilan persistent production database muammosi bor**. Netlify serverless funksiyalari doimiy server kabi ishlamaydi. SQLite fayliga yozilgan ma'lumot keyingi invocation'da ishonchli saqlanib qolmasligi mumkin.
+
+Shuning uchun men arxitekturani quyidagicha qurishni tavsiya qilaman:
+
+```text
+                    USER
+                     │
+                     ▼
+             ┌────────────────┐
+             │    Netlify     │
+             │ Static Frontend│
+             └───────┬────────┘
+                     │ HTTPS
+                     ▼
+             ┌────────────────┐
+             │ Netlify        │
+             │ Functions      │
+             │ / FastAPI      │
+             └───────┬────────┘
+                     │
+          ┌──────────┴──────────┐
+          ▼                     ▼
+   ┌──────────────┐      ┌──────────────┐
+   │ Persistent DB│      │  OpenAI API  │
+   │              │      │ GPT-5.6 Luna │
+   └──────────────┘      └──────────────┘
+```
+
+Agar **SQLite aynan shart** bo‘lsa, production backendni doimiy serverga chiqarish kerak.
+
+Agar **Netlify 100% shart** bo‘lsa, SQLite o‘rniga SQLite-compatible persistent database ishlatish kerak bo‘ladi. Men promptda buni alohida **architecture constraint** sifatida qoldirgan bo‘lardim.
+
+---
+
+# 2. Loyiha konsepsiyasi
+
+Loyiha oddiy vocabulary game emas.
+
+Bu:
+
+> **Adaptive English Sentence Reconstruction Game**
+
+bo‘ladi.
+
+Foydalanuvchi o‘zbekcha gapni ko‘radi va uning inglizcha tarjimasini **grammatik jihatdan to‘g‘ri ketma-ketlikda** pastdagi harflar/kataklar orqali yig‘adi.
+
+Masalan:
+
+```text
+O'zbekcha:
+
+Men har kuni universitetga boraman.
+```
+
+Pastdagi matrix:
+
+```text
+┌────┬────┬────┬────┐
+│ go │ I  │ day│ to │
+├────┼────┼────┼────┤
+│every│university│am│
+├────┼────┼────┼────┤
+│morning│the│go │
+└────┴────┴────┴────┘
+```
+
+Foydalanuvchi:
+
+```text
+I → go → to → university → every → day
+```
+
+deb tanlashi kerak.
+
+Agar:
+
+```text
+I → to
+```
+
+qilsa, **darhol xato**.
+
+Sababi bu o‘yinda faqat so‘zlarni bilish emas, **English grammatical order** ham o‘rgatiladi.
+
+---
+
+# 3. Asosiy texnik arxitektura
+
+```text
+Frontend
+│
+├── Authentication UI
+├── Level Selection
+├── Game Screen
+├── Settings
+├── Progress
+├── Weak Words
+└── Statistics
+        │
+        ▼
+REST API
+        │
+        ▼
+FastAPI
+│
+├── Auth Service
+├── User Service
+├── Game Service
+├── Difficulty Engine
+├── Weak Word Service
+├── Spaced Repetition Service
+├── LLM Service
+├── Progress Service
+└── Settings Service
+        │
+        ├──────────────► Persistent Database
+        │
+        └──────────────► OpenAI API
+                              │
+                              ▼
+                        GPT-5.6 Luna
+```
+
+Frontend **static** bo‘ladi.
+
+Backend frontendga aralash HTML render qilmaydi.
+
+Frontend faqat:
+
+```text
+HTML
+CSS
+JavaScript
+```
+
+orqali API bilan ishlaydi.
+
+---
+
+# 4. User lifecycle
+
+Foydalanuvchi birinchi marta keladi:
+
+```text
+Landing Page
+     ↓
+Register
+     ↓
+Username + Password
+     ↓
+Login
+     ↓
+Choose English Level
+     ↓
+A1 / A2 / B1 / B2 / C1
+     ↓
+Game
+```
+
+Keyingi safar:
+
+```text
+Login
+   ↓
+Database'dan progress
+   ↓
+Oldingi level
+   ↓
+Current difficulty
+   ↓
+Weak words
+   ↓
+Spaced repetition
+   ↓
+Game
+```
+
+Demak foydalanuvchi har safar **0 dan boshlamaydi**.
+
+---
+
+# 5. Level system
+
+Asosiy darajalar:
+
+```text
+A1
+A2
+B1
+B2
+C1
+```
+
+Ammo ichkarida qat'iy:
+
+```text
+A2 Easy
+A2 Normal
+A2 Hard
+```
+
+kabi statik bosqichlar bo‘lmaydi.
+
+Buning o‘rniga **AI adaptive difficulty score** bo‘ladi.
+
+Masalan:
+
+```text
+A2
+difficulty = 0.42
+```
+
+Keyinchalik:
+
+```text
+A2
+difficulty = 0.57
+```
+
+va:
+
+```text
+A2
+difficulty = 0.73
+```
+
+bo‘lishi mumkin.
+
+Shunday qilib foydalanuvchi hali ham **A2** darajasida, lekin o‘zining individual A2 qiyinligida o‘ynaydi.
+
+Bu juda muhim.
+
+---
+
+# 6. Adaptive Difficulty Engine
+
+Har bir rounddan keyin backend quyidagilarni analiz qiladi:
+
+```text
+accuracy
+mistake_count
+response_time
+sentence_length
+word_count
+grammar_complexity
+vocabulary_difficulty
+recent_performance
+weak_words
+```
+
+Masalan:
+
+### Juda yaxshi
+
+```text
+Accuracy: 96%
+Average time: 4.2 sec
+Mistakes: 0
+```
+
+Natija:
+
+```text
+difficulty ↑
+```
+
+LLM keyingi matnni biroz murakkablashtiradi.
+
+---
+
+### O‘rtacha
+
+```text
+Accuracy: 78%
+Average time: 9 sec
+Mistakes: 1
+```
+
+Natija:
+
+```text
+difficulty ≈ same
+```
+
+---
+
+### Qiynalayapti
+
+```text
+Accuracy: 48%
+Average time: 18 sec
+Mistakes: 5
+```
+
+Natija:
+
+```text
+difficulty ↓
+```
+
+Keyingi matn osonlashadi.
+
+---
+
+# 7. AI difficulty qanday ishlaydi?
+
+Bu yerda muhim prinsip:
+
+**LLM difficulty'ni o‘zi xohlagancha o‘zgartirmaydi.**
+
+Backendda deterministic difficulty engine bo‘ladi.
+
+Masalan:
+
+```text
+current_score = 0.65
+```
+
+performance asosida:
+
+```text
+new_score = 0.69
+```
+
+yoki:
+
+```text
+new_score = 0.58
+```
+
+bo‘ladi.
+
+Keyin LLMga:
+
+```json
+{
+  "level": "A2",
+  "difficulty": 0.69
+}
+```
+
+beriladi.
+
+LLM shu parametr asosida material yaratadi.
+
+Bu architecture LLMni nazoratsiz qoldirmaydi.
+
+---
+
+# 8. LLM-generated content
+
+Database'da oldindan:
+
+```text
+A1 lesson 1
+A1 lesson 2
+A2 lesson 1
+...
+```
+
+kabi static lessonlar bo‘lmaydi.
+
+Har bir yangi game session uchun LLMga kerakli context yuboriladi.
+
+Masalan:
+
+```json
+{
+  "level": "A2",
+  "difficulty": 0.61,
+  "topic": "AI",
+  "weak_words": [
+    "although",
+    "improve",
+    "instead"
+  ],
+  "recent_errors": [
+    "word_order",
+    "preposition"
+  ]
+}
+```
+
+LLM yangi o‘zbekcha matn va uning inglizcha targetini yaratadi.
+
+---
+
+# 9. Topic system
+
+LLM quyidagi mavzulardan foydalanishi mumkin:
+
+```text
+Technology
+AI News
+Science
+Germany
+Uzbekistan
+Daily Life
+Facts
+Fun Facts
+```
+
+Ammo topic uchun ham **static sentence database** bo‘lmaydi.
+
+Masalan:
+
+```text
+Topic = AI News
+```
+
+bo‘lsa, LLM shu mavzuda foydalanuvchining darajasiga mos yangi material yaratadi.
+
+---
+
+# 10. Eng muhim qism — sentence structure
+
+LLM shunchaki:
+
+```text
+Uzbek sentence
+English translation
+```
+
+qaytarmasligi kerak.
+
+U **game-ready structured data** qaytarishi kerak.
+
+Masalan:
+
+```json
+{
+  "source_text": "Men har kuni universitetga boraman.",
+  "target_text": "I go to university every day.",
+  "tokens": [
+    "I",
+    "go",
+    "to",
+    "university",
+    "every",
+    "day"
+  ],
+  "correct_order": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+  ]
+}
+```
+
+Frontend esa tokenlarni aralashtirib ko‘rsatadi:
+
+```text
+every
+I
+university
+day
+to
+go
+```
+
+---
+
+# 11. Grammar-order validation
+
+Bu loyiha uchun eng muhim game rule.
+
+Foydalanuvchi:
+
+```text
+I
+```
+
+tanladi.
+
+To‘g‘ri.
+
+Keyingi kerakli token:
+
+```text
+go
+```
+
+Agar user:
+
+```text
+to
+```
+
+ni tanlasa:
+
+```text
+❌ Incorrect
+```
+
+darhol ko‘rsatiladi.
+
+Keyingi to‘g‘ri token hali ham:
+
+```text
+go
+```
+
+bo‘lib qoladi.
+
+Shuning uchun user shunchaki barcha so‘zlarni topishi emas, **grammatik tartibni bilishi** kerak.
+
+---
+
+# 12. Matrix system
+
+Siz aytganidek, harflar/so‘zlar matrix shaklida bo‘ladi.
+
+Masalan:
+
+```text
+3 × 4
+```
+
+yoki:
+
+```text
+4 × 4
+```
+
+yoki:
+
+```text
+4 × 5
+```
+
+User Settings orqali o‘zgartirishi mumkin.
+
+Masalan:
+
+```text
+Matrix Size
+
+○ 3 × 3
+● 4 × 4
+○ 4 × 5
+○ Auto
+```
+
+**Auto** rejimda backend/frontend target tokenlar soniga qarab optimal grid yaratadi.
+
+---
+
+# 13. Harakat mexanikasi
+
+Bu yerda men oddiy click emas, **path-based selection** qilishni tavsiya qilaman.
+
+User tokenlarni:
+
+```text
+I → go → to → university
+```
+
+ketma-ket tanlaydi.
+
+Tanlangan tokenlar yuqoridagi answer area'ga tushadi.
+
+Masalan:
+
+```text
+┌─────────────────────────────┐
+│ I   go   to   university    │
+└─────────────────────────────┘
+```
+
+Keyingi:
+
+```text
+every
+```
+
+tanlanadi.
+
+---
+
+# 14. Pause system
+
+Timer ekranda ko‘rinadi:
+
+```text
+01:24
+```
+
+Pause bosilganda:
+
+```text
+┌─────────────────────────┐
+│                         │
+│       GAME PAUSED       │
+│                         │
+│       ▶ Resume          │
+│                         │
+└─────────────────────────┘
+```
+
+fon xiralashadi.
+
+Game interaction vaqtincha bloklanadi.
+
+**Muhim:** pause vaqti performance hisobiga qo‘shilmaydi.
+
+Masalan:
+
+```text
+Active time = 18.4 sec
+Paused time = 42 sec
+```
+
+AI faqat:
+
+```text
+18.4 sec
+```
+
+ni hisobga oladi.
+
+---
+
+# 15. Weak Words System
+
+Ikki xil signal bo‘ladi.
+
+### User tomonidan
+
+User:
+
+```text
+⭐ Learn this
+```
+
+tugmasini bosadi.
+
+### AI tomonidan
+
+Masalan:
+
+```text
+although
+```
+
+uch marta xato qilindi.
+
+Backend:
+
+```text
+weak_word = true
+```
+
+deb belgilaydi.
+
+Shunday qilib:
+
+```text
+User-selected weak words
++
+AI-detected weak words
+```
+
+birgalikda ishlaydi.
+
+---
+
+# 16. Weak word repetition
+
+Masalan user `although` so‘zini yaxshi bilmaydi.
+
+Keyingi materiallarda LLMga:
+
+```json
+{
+  "priority_vocabulary": [
+    "although"
+  ]
+}
+```
+
+yuboriladi.
+
+LLM imkon qadar shu vocabulary'ni tabiiy gaplarda ishlatadi.
+
+Lekin uni **sun'iy ravishda har bir gapga tiqishtirmaydi**.
+
+---
+
+# 17. Spaced Repetition
+
+Weak word uchun:
+
+```text
+wrong_count
+correct_count
+last_seen
+last_wrong
+next_review
+strength
+```
+
+saqlanadi.
+
+Masalan:
+
+```text
+although
+
+1st mistake → review soon
+2nd mistake → review soon
+correct → review later
+correct → review further later
+```
+
+Bu klassik spaced repetition tamoyiliga asoslanadi.
+
+---
+
+# 18. LLM context
+
+Har bir yangi material yaratishdan oldin backend LLMga foydalanuvchining kerakli holatini yuboradi:
+
+```text
+User level
+Current difficulty
+Recent performance
+Average response time
+Recent mistakes
+Weak vocabulary
+Words due for review
+Selected topic
+Recent sentence complexity
+```
+
+Lekin butun user historyni yubormaslik kerak.
+
+Faqat kerakli **summary/context** yuboriladi.
+
+Bu:
+
+* token costni kamaytiradi
+* latency'ni kamaytiradi
+* promptni boshqarishni osonlashtiradi.
+
+---
+
+# 19. Database konsepsiyasi
+
+Asosiy jadvallar:
+
+```text
+users
+```
+
+```text
+user_progress
+```
+
+```text
+game_sessions
+```
+
+```text
+game_rounds
+```
+
+```text
+word_mastery
+```
+
+```text
+user_settings
+```
+
+### users
+
+```text
+id
+username
+password_hash
+created_at
+last_login
+```
+
+### user_progress
+
+```text
+user_id
+current_level
+difficulty_score
+total_games
+total_correct
+total_wrong
+average_time
+```
+
+### game_rounds
+
+```text
+id
+user_id
+level
+difficulty
+source_text
+target_text
+tokens
+correct_order
+user_order
+is_correct
+response_time
+mistake_count
+created_at
+```
+
+### word_mastery
+
+```text
+id
+user_id
+word
+wrong_count
+correct_count
+strength
+is_weak
+next_review
+last_seen
+```
+
+---
+
+# 20. Authentication
+
+Username + password.
+
+Password database'da plain text saqlanmaydi.
+
+```text
+password
+   ↓
+secure password hashing
+   ↓
+password_hash
+   ↓
+database
+```
+
+Login'dan keyin authentication token/session mexanizmi ishlaydi.
+
+Frontend:
+
+```text
+access token
+```
+
+yoki secure session orqali API bilan ishlaydi.
+
+OpenAI key esa **hech qachon frontendga berilmaydi**.
+
+---
+
+# 21. API konsepsiyasi
+
+Asosiy endpointlar:
+
+```text
+POST /auth/register
+POST /auth/login
+POST /auth/logout
+GET  /auth/me
+```
+
+Progress:
+
+```text
+GET /progress
+GET /progress/summary
+```
+
+Level:
+
+```text
+POST /level/select
+GET  /level/current
+```
+
+Game:
+
+```text
+POST /game/start
+POST /game/answer
+POST /game/complete
+POST /game/pause
+```
+
+Weak words:
+
+```text
+GET  /words/weak
+POST /words/{word}/mark
+DELETE /words/{word}/mark
+```
+
+Settings:
+
+```text
+GET /settings
+PUT /settings
+```
+
+LLM:
+
+```text
+POST /game/generate
+```
+
+Lekin frontend to‘g‘ridan-to‘g‘ri OpenAI API bilan gaplashmaydi.
+
+```text
+Frontend
+   ↓
+FastAPI
+   ↓
+OpenAI
+```
+
+---
+
+# 22. Settings
+
+Settings'da:
+
+```text
+English Level
+Matrix Size
+Difficulty Mode
+```
+
+bo‘lishi mumkin.
+
+Lekin **levelni o‘zgartirish progressni o‘chirib yubormaydi**.
+
+Masalan:
+
+```text
+A2 progress = 73%
+B1 progress = 12%
+```
+
+alohida saqlanadi.
+
+Shuning uchun database'da aslida:
+
+```text
+user_level_progress
+```
+
+ko‘rinishidagi model foydaliroq.
+
+---
+
+# 23. AI-generated difficulty
+
+LLMga yuboriladigan asosiy concept:
+
+```text
+You are an adaptive English learning content generator.
+
+User level:
+A2
+
+Current difficulty:
+0.67
+
+Performance:
+92% accuracy
+
+Average response:
+5.4 seconds
+
+Weak words:
+although, instead
+
+Recent mistakes:
+prepositions
+
+Topic:
+Technology
+```
+
+LLM:
+
+```text
+A2
+difficulty 0.67
+```
+
+uchun mos material yaratadi.
+
+Agar keyingi performance:
+
+```text
+97%
+3.8 sec
+```
+
+bo‘lsa:
+
+```text
+difficulty → 0.72
+```
+
+bo‘lishi mumkin.
+
+---
+
+# 24. Foydalanuvchini zeriktirmaslik
+
+Bu alohida **engagement engine** bo‘lishi kerak.
+
+LLM doim bir xil:
+
+```text
+Subject + verb + object
+```
+
+gaplar yaratmasligi kerak.
+
+U quyidagilarni aralashtiradi:
+
+```text
+statement
+question
+negative
+short explanation
+interesting fact
+daily situation
+technology fact
+science fact
+Uzbekistan-related fact
+Germany-related fact
+AI-related fact
+```
+
+Ammo grammar va vocabulary difficulty user levelidan oshib ketmaydi.
+
+---
+
+# 25. Muhim AI qoidasi
+
+LLM:
+
+**“Qiziqroq bo‘lsin” deb user levelidan tashqariga chiqmasligi kerak.**
+
+Masalan:
+
+```text
+User = A1
+```
+
+bo‘lsa, AI:
+
+```text
+Despite the unprecedented advancement...
+```
+
+kabi gap bermasligi kerak. 😄
+
+Qiziqarlilik:
+
+```text
+topic diversity
+```
+
+orqali oshiriladi, vocabulary complexity orqali emas.
+
+---
+
+# 26. Game loop
+
+Butun o‘yin sikli:
+
+```text
+LOGIN
+  ↓
+LOAD USER PROFILE
+  ↓
+LOAD LEVEL PROGRESS
+  ↓
+LOAD DIFFICULTY
+  ↓
+LOAD WEAK WORDS
+  ↓
+LOAD WORDS DUE FOR REVIEW
+  ↓
+GENERATE NEW CONTENT WITH GPT-5.6 LUNA
+  ↓
+VALIDATE LLM RESPONSE
+  ↓
+CREATE SHUFFLED MATRIX
+  ↓
+START TIMER
+  ↓
+USER SELECTS WORD
+  ↓
+CHECK NEXT EXPECTED TOKEN
+  │
+  ├── WRONG → immediate feedback
+  │
+  └── CORRECT → continue
+  ↓
+SENTENCE COMPLETED
+  ↓
+CALCULATE:
+accuracy
+mistakes
+active time
+difficulty
+word performance
+  ↓
+UPDATE DATABASE
+  ↓
+UPDATE WEAK WORDS
+  ↓
+UPDATE SPACED REPETITION
+  ↓
+UPDATE DIFFICULTY
+  ↓
+SHOW RESULT
+  ↓
+NEXT ROUND
+```
+
+---
+
+# 27. Eng muhim arxitektura prinsipi
+
+Men bu loyihada **LLMni game engine'ning o‘zi qilmas edim**.
+
+To‘g‘ri architecture:
+
+```text
+              ┌───────────────────┐
+              │   Deterministic   │
+              │    Game Engine    │
+              └─────────┬─────────┘
+                        │
+          ┌─────────────┴─────────────┐
+          │                           │
+          ▼                           ▼
+   Difficulty Engine             Validation
+          │
+          ▼
+       GPT-5.6 Luna
+          │
+          ▼
+    New Game Content
+```
+
+Ya'ni:
+
+**AI content yaratadi.**
+
+Lekin:
+
+**Backend qoidalarni nazorat qiladi.**
+
+Bu juda muhim. Aks holda LLM noto‘g‘ri grammar order, noto‘g‘ri tokenization yoki noto‘g‘ri difficulty berishi mumkin.
+
+---
+
+## 28. Final texnologik stack
+
+```text
+Frontend:
+HTML
+CSS
+Vanilla JavaScript
+Fetch API
+
+Backend:
+Python
+FastAPI
+Pydantic
+SQLAlchemy
+SQLite-compatible persistence layer
+
+AI:
+OpenAI API
+GPT-5.6 Luna (`gpt-5.6-luna`)
+
+Authentication:
+Username + Password
+Secure password hashing
+Token/session authentication
+
+Deployment:
+Netlify
+Netlify Functions / compatible FastAPI deployment architecture
+
+Database:
+SQLite-compatible persistent solution
+```
+
+GPT-5.6 Luna uchun aynan `gpt-5.6-luna` model ID ishlatiladi; OpenAI uni cost-sensitive, high-volume workloadlar uchun tavsiflaydi. ([OpenAI Developers][2])
+
+### Men yana bir narsani o‘zgartirgan bo‘lardim
+
+Siz **“har bir foydalanuvchining leveli saqlansin”** dedingiz. Faqat bitta `current_level` saqlash yetarli emas.
+
+Masalan:
+
+```text
+user
+ ├── A1 → 100%
+ ├── A2 → 76%
+ ├── B1 → 31%
+ ├── B2 → locked
+ └── C1 → locked
+```
+
+va har bir ochilgan level uchun:
+
+```text
+difficulty_score
+accuracy
+average_time
+weak_words
+review_words
+round_count
+```
+
+alohida saqlanishi kerak.
+
+Shunda foydalanuvchi **A2 dan B1 ga o'tib, keyin yana A2 ga qaytsa**, A2 dagi o‘zining avvalgi adaptive holatidan davom etadi.
+
+[1]: https://developers.openai.com/api/docs/guides/latest-model?utm_source=chatgpt.com "Model guidance | OpenAI API"
+[2]: https://developers.openai.com/api/docs/models/gpt-5.6-luna?utm_source=chatgpt.com "GPT-5.6 Luna Model | OpenAI API"
