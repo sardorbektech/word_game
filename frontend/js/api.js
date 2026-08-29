@@ -47,12 +47,19 @@ class ApiClient {
       if (response.status === 401 && !endpoint.includes("/auth/")) {
         this.removeToken();
         window.location.reload();
-        throw new Error("Session expired. Please log in again.");
+        throw new Error("Sessiya tugadi. Iltimos qaytadan kiring.");
       }
 
-      const data = await response.json();
+      const text = await response.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = { detail: text };
+      }
+
       if (!response.ok) {
-        throw new Error(data.detail || "Server error occurred");
+        throw new Error(data.detail || data.message || `Server xatosi (${response.status})`);
       }
 
       return data;

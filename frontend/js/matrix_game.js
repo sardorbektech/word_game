@@ -238,15 +238,35 @@ class MatrixGameEngine {
     }
   }
 
+  playSound(action, param) {
+    if (window.soundEngine) {
+      try {
+        if (action === "select" && typeof window.soundEngine.playTileSelect === "function") {
+          window.soundEngine.playTileSelect(param || 0);
+        } else if (action === "complete" && typeof window.soundEngine.playWordComplete === "function") {
+          window.soundEngine.playWordComplete();
+        } else if (action === "mistake" && typeof window.soundEngine.playMistake === "function") {
+          window.soundEngine.playMistake();
+        } else if (action === "victory" && typeof window.soundEngine.playVictory === "function") {
+          window.soundEngine.playVictory();
+        }
+      } catch (e) {
+        console.warn("Sound playback skipped:", e);
+      }
+    }
+  }
+
   handleDragStart(row, col, char, tile) {
     if (this.isPaused) return;
-    window.soundEngine.ensureContext();
+    if (window.soundEngine && typeof window.soundEngine.ensureContext === "function") {
+      try { window.soundEngine.ensureContext(); } catch (e) {}
+    }
 
     this.isDragging = true;
     this.selectedPath = [{ row, col, char, element: tile }];
     tile.classList.add("selected");
     
-    window.soundEngine.playTileSelect(0);
+    this.playSound("select", 0);
     this.updateLiveTray();
     this.drawSvgLines();
   }
@@ -264,7 +284,7 @@ class MatrixGameEngine {
         removed.element.classList.remove("selected");
         this.updateLiveTray();
         this.drawSvgLines();
-        window.soundEngine.playTileSelect(this.selectedPath.length - 1);
+        this.playSound("select", this.selectedPath.length - 1);
         return;
       }
     }
@@ -280,7 +300,7 @@ class MatrixGameEngine {
     if (dr + dc === 1) {
       this.selectedPath.push({ row, col, char, element: tile });
       tile.classList.add("selected");
-      window.soundEngine.playTileSelect(this.selectedPath.length - 1);
+      this.playSound("select", this.selectedPath.length - 1);
       this.updateLiveTray();
       this.drawSvgLines();
     }
@@ -322,7 +342,7 @@ class MatrixGameEngine {
   }
 
   handleWordSuccess(wordText) {
-    window.soundEngine.playWordComplete();
+    this.playSound("complete");
 
     // Flash green on path tiles
     this.selectedPath.forEach(p => {
@@ -346,7 +366,7 @@ class MatrixGameEngine {
 
   handleWordMistake(swipedWord) {
     this.mistakeCount++;
-    window.soundEngine.playMistake();
+    this.playSound("mistake");
 
     // Flash red on path tiles
     this.selectedPath.forEach(p => {
@@ -458,7 +478,7 @@ class MatrixGameEngine {
 
   async completeRound() {
     this.stopTimer();
-    window.soundEngine.playVictory();
+    this.playSound("victory");
 
     try {
       const response = await ApiClient.submitRound(
