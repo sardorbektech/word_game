@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=2.2.3">
+  <link rel="stylesheet" href="css/style.css?v=2.3.0">
 </head>
 <body>
 
@@ -66,37 +66,39 @@
       </div>
     </section>
 
-    <!-- Screen 2: Game Arena -->
+    <!-- Screen 2: Game Arena (Single-Screen / No-Scroll) -->
     <section class="screen-view" id="screen-game">
       <div class="game-arena">
         
-        <!-- Source Uzbek Sentence Card -->
-        <div class="sentence-card">
-          <div class="sentence-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 8px;">
-            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-              <div class="sentence-label">🇺🇿 O'zbekcha Ma'nosi:</div>
-              <div class="badge badge-source badge-source-dataset game-source-badge" id="arena-source-badge">⚪ AI Offline</div>
-            </div>
-            <button class="btn btn-danger" style="padding: 6px 14px; font-size: 13px; font-weight: 700;" onclick="window.exitCurrentGame()" title="O'yindan chiqish va Dashboardga qaytish">
-              🚪 O'yindan Chiqish
-            </button>
+        <!-- Top Game Header Bar (Level, Source, Timer, Action Icons) -->
+        <div class="game-top-bar">
+          <div class="game-top-left">
+            <span class="game-level-pill" id="game-level-tag">🏆 A1</span>
+            <span class="badge badge-source badge-source-dataset game-source-badge" id="arena-source-badge">⚪ AI Offline</span>
           </div>
+          <div class="game-timer-pill" id="timer-display">⏱️ 00:00</div>
+          <div class="game-top-actions">
+            <button class="btn-icon-action btn-icon-warn" id="btn-learn-word" title="Zaif so'z deb belgilash">⭐</button>
+            <button class="btn-icon-action btn-icon-sec" id="btn-pause" title="Pauza">⏸️</button>
+            <button class="btn-icon-action btn-icon-dan" id="btn-exit-game" onclick="window.exitCurrentGame()" title="Chiqish">🚪</button>
+          </div>
+        </div>
+
+        <!-- Clean Uzbek Target Sentence -->
+        <div class="sentence-card">
           <div class="source-sentence" id="source-sentence">
             Yuklanmoqda...
           </div>
         </div>
 
-        <!-- Target Grammatical Assembly Bar -->
+        <!-- Target Grammatical Assembly Slots -->
         <div class="assembly-bar" id="assembly-bar">
-          <!-- Injected slots: [ I ] [ drink ] [ _ _ _ _ ] -->
+          <!-- Injected slots -->
         </div>
 
-        <!-- Live Swiped Letters Tray -->
-        <div class="live-tray">
-          <div class="live-swiped-text" id="live-swiped-text">
-            <span style="color: var(--text-dim); font-size: 14px; font-weight: 500;">So'zni barmoq/sichqoncha bilan ulab toping...</span>
-          </div>
-          <div class="tray-hint">4 tomonga ulang (o'ng, chap, yuqori, past)</div>
+        <!-- Live Dragged Letters Preview -->
+        <div class="live-tray" id="live-tray">
+          <div class="live-swiped-text" id="live-swiped-text"></div>
         </div>
 
         <!-- Letter Matrix Grid Area -->
@@ -104,22 +106,6 @@
           <svg class="svg-overlay" id="svg-overlay"></svg>
           <div class="matrix-grid" id="matrix-grid">
             <!-- Dynamic Grid Tiles -->
-          </div>
-        </div>
-
-        <!-- HUD Controls & Timer -->
-        <div class="game-hud">
-          <div class="hud-timer" id="timer-display">⏱️ 00:00</div>
-          <div class="hud-buttons">
-            <button class="btn btn-warning" id="btn-learn-word" title="Ushbu so'zni zaif deb belgilash">
-              ⭐ Learn this
-            </button>
-            <button class="btn btn-secondary" id="btn-pause">
-              ⏸️ Pauza
-            </button>
-            <button class="btn btn-danger" id="btn-exit-game" onclick="window.exitCurrentGame()" title="O'yinni to'xtatish va chiqish">
-              🚪 Chiqish
-            </button>
           </div>
         </div>
 
@@ -281,9 +267,9 @@
   </div>
 
   <!-- Scripts with cache busters -->
-  <script src="js/api.js?v=2.2.6"></script>
-  <script src="js/audio.js?v=2.2.6"></script>
-  <script src="js/matrix_game.js?v=2.2.6"></script>
-  <script src="js/app.js?v=2.2.6"></script>
+  <script src="js/api.js?v=2.3.0"></script>
+  <script src="js/audio.js?v=2.3.0"></script>
+  <script src="js/matrix_game.js?v=2.3.0"></script>
+  <script src="js/app.js?v=2.3.0"></script>
 </body>
 </html>

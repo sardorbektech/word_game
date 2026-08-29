@@ -406,11 +406,135 @@ body {
   gap: 6px;
 }
 
-.source-sentence {
-  font-size: 20px;
-  font-weight: 600;
+/* ==========================================================================
+   GAME SCREEN (SINGLE-SCREEN / NO-SCROLL LAYOUT)
+   ========================================================================== */
+#screen-game.active {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: calc(100dvh - 80px);
+  overflow: hidden;
+  gap: 8px;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.game-arena {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 580px;
+  width: 100%;
+  margin: 0 auto;
+  height: 100%;
+  max-height: calc(100dvh - 85px);
+  justify-content: space-between;
+  align-items: stretch;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Mini Header Bar in Game */
+.game-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 4px;
+  width: 100%;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.game-top-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.game-level-pill {
+  font-size: 13px;
+  font-weight: 800;
+  padding: 4px 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  color: var(--accent-gold);
+}
+
+.game-timer-pill {
+  font-size: 15px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-cyan);
+  background: var(--bg-card);
+  padding: 4px 14px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-color);
+  letter-spacing: 0.05em;
+}
+
+.game-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-icon-action {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
   color: #fff;
-  line-height: 1.4;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  transition: transform 0.15s ease, background 0.15s ease;
+  user-select: none;
+}
+
+.btn-icon-action:hover {
+  transform: scale(1.08);
+}
+
+.btn-icon-action:active {
+  transform: scale(0.95);
+}
+
+.btn-icon-warn:hover {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: var(--accent-gold);
+}
+
+.btn-icon-sec:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.btn-icon-dan:hover {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: var(--accent-red);
+}
+
+/* Clean Uzbek Target Sentence */
+.sentence-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 8px 14px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+.source-sentence {
+  font-size: clamp(14px, 2.2vh, 18px);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.35;
+  margin: 0;
 }
 
 /* Target Sentence Assembly Bar */
@@ -418,18 +542,20 @@ body {
   background: rgba(10, 15, 29, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-md);
-  padding: 14px 18px;
+  padding: 6px 10px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
-  min-height: 60px;
+  justify-content: center;
+  gap: 6px;
+  min-height: 38px;
+  flex-shrink: 0;
 }
 
 .word-slot {
-  padding: 6px 14px;
+  padding: 4px 10px;
   border-radius: var(--radius-sm);
-  font-size: 16px;
+  font-size: clamp(12px, 1.8vh, 15px);
   font-weight: 700;
   display: inline-flex;
   align-items: center;
@@ -468,22 +594,25 @@ body {
 .live-tray {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 10px 16px;
-  background: var(--bg-glass);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  min-height: 48px;
+  justify-content: center;
+  padding: 2px 10px;
+  background: transparent;
+  height: 28px;
+  min-height: 28px;
+  flex-shrink: 0;
 }
 
 .live-swiped-text {
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
+  font-size: clamp(16px, 2.6vh, 22px);
+  font-weight: 900;
+  letter-spacing: 0.15em;
   color: var(--accent-cyan);
+  text-shadow: 0 0 12px rgba(0, 242, 254, 0.6);
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
+  min-height: 24px;
 }
 
 .live-swiped-text span {
@@ -496,37 +625,25 @@ body {
   100% { transform: scale(1); opacity: 1; }
 }
 
-.tray-hint {
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
 /* ==========================================================================
    MATRIX GRID & SVG TRAIL
    ========================================================================== */
-.game-arena {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  max-width: 680px;
-  width: 100%;
-  margin: 0 auto;
-}
-
 .matrix-wrapper {
   position: relative;
   margin: 0 auto;
-  max-width: min(560px, 94vw);
   width: 100%;
+  max-width: min(52dvh, min(94vw, 480px));
+  max-height: min(52dvh, min(94vw, 480px));
   aspect-ratio: 1 / 1;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 12px;
+  padding: 8px;
   box-shadow: var(--shadow-lg);
-  touch-action: none; /* Crucial for custom touch swipe */
+  touch-action: none;
   box-sizing: border-box;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .svg-overlay {
@@ -543,7 +660,7 @@ body {
   display: grid;
   width: 100%;
   height: 100%;
-  gap: 6px;
+  gap: 4px;
   z-index: 5;
   position: relative;
   box-sizing: border-box;
@@ -606,35 +723,6 @@ body {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-6px); }
   75% { transform: translateX(6px); }
-}
-
-/* HUD Controls */
-.game-hud {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 8px 0;
-}
-
-.hud-timer {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 18px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--accent-cyan);
-  background: var(--bg-card);
-  padding: 8px 16px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
-}
-
-.hud-buttons {
-  display: flex;
-  align-items: center;
-  gap: 10px;
 }
 
 /* Standard Buttons */
@@ -791,27 +879,58 @@ body {
   background: var(--accent-cyan);
 }
 
-/* Responsive adjustments */
+/* Responsive adjustments (Mobile & Single-Screen Fitting) */
 @media (max-width: 640px) {
+  .app-header {
+    height: 48px;
+    padding: 0 10px;
+  }
+
+  .brand-title {
+    display: none;
+  }
+
   .main-container {
-    padding: 10px 6px;
+    padding: 4px 6px;
   }
   
   .game-arena {
-    gap: 10px;
+    gap: 6px;
+    max-height: calc(100dvh - 65px);
   }
   
   .sentence-card {
-    padding: 12px 14px;
+    padding: 6px 10px;
   }
   
   .source-sentence {
-    font-size: 15px;
+    font-size: 14px;
   }
   
+  .assembly-bar {
+    padding: 4px 6px;
+    min-height: 32px;
+    gap: 4px;
+  }
+
+  .word-slot {
+    font-size: 12px;
+    padding: 3px 6px;
+  }
+
+  .live-tray {
+    height: 24px;
+    min-height: 24px;
+  }
+
+  .live-swiped-text {
+    font-size: 17px;
+  }
+
   .matrix-wrapper {
-    max-width: min(96vw, 420px);
-    padding: 6px;
+    max-width: min(48dvh, 92vw);
+    max-height: min(48dvh, 92vw);
+    padding: 5px;
     border-radius: var(--radius-md);
   }
   
@@ -820,32 +939,54 @@ body {
   }
   
   .matrix-cell, .matrix-tile {
-    font-size: clamp(10px, 3.8vw, 15px);
+    font-size: clamp(9px, 3.5vw, 15px);
     border-radius: 4px;
   }
-  
-  .word-slot {
-    font-size: 13px;
+
+  .btn-icon-action {
+    width: 32px;
+    height: 32px;
+    font-size: 15px;
+  }
+}
+
+@media (max-height: 700px) {
+  .app-header {
+    height: 44px;
+    padding: 0 8px;
+  }
+
+  .main-container {
+    padding: 2px 4px;
+  }
+
+  .game-arena {
+    gap: 4px;
+    max-height: calc(100dvh - 55px);
+  }
+
+  .sentence-card {
     padding: 4px 8px;
   }
-  
-  .game-hud {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
+
+  .source-sentence {
+    font-size: 13px;
   }
-  
-  .hud-timer {
-    font-size: 14px;
-    padding: 6px 12px;
+
+  .assembly-bar {
+    padding: 2px 4px;
+    min-height: 28px;
+    gap: 3px;
   }
-  
-  .app-header {
-    padding: 0 12px;
-    height: 58px;
+
+  .word-slot {
+    font-size: 11px;
+    padding: 2px 5px;
   }
-  
-  .brand-title {
-    display: none;
+
+  .matrix-wrapper {
+    max-width: min(45dvh, 320px);
+    max-height: min(45dvh, 320px);
+    padding: 4px;
   }
 }

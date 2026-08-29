@@ -86,6 +86,11 @@ class MatrixGameEngine {
       headerLevel.textContent = `🏆 ${this.roundData.level}`;
     }
 
+    const gameLvlTag = document.getElementById("game-level-tag");
+    if (gameLvlTag && this.roundData && this.roundData.level) {
+      gameLvlTag.textContent = `🏆 ${this.roundData.level}`;
+    }
+
     const topicBadge = document.getElementById("game-topic-badge");
     if (topicBadge && this.roundData) {
       topicBadge.style.display = "inline-flex";
@@ -208,11 +213,11 @@ class MatrixGameEngine {
         tile.dataset.char = char;
 
         if (dimension <= 6) {
-          tile.style.fontSize = "clamp(15px, 3.2vw, 22px)";
+          tile.style.fontSize = "clamp(14px, 2.8vh, 22px)";
         } else if (dimension <= 8) {
-          tile.style.fontSize = "clamp(13px, 2.7vw, 18px)";
+          tile.style.fontSize = "clamp(12px, 2.3vh, 18px)";
         } else {
-          tile.style.fontSize = "clamp(11px, 2.2vw, 15px)";
+          tile.style.fontSize = "clamp(10px, 1.9vh, 15px)";
         }
 
         // Mouse Listeners
@@ -392,7 +397,7 @@ class MatrixGameEngine {
 
   clearLiveTray() {
     if (this.liveTrayEl) {
-      this.liveTrayEl.innerHTML = `<span style="color: var(--text-dim); font-size: 14px; font-weight: 500;">So'zni barmoq/sichqoncha bilan ulab toping...</span>`;
+      this.liveTrayEl.innerHTML = "";
     }
   }
 
