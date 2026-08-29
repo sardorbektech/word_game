@@ -412,7 +412,7 @@ body.in-game .app-header {
 }
 
 body.in-game .main-container {
-  padding: 8px 10px;
+  padding: 0;
   height: 100dvh;
   max-height: 100dvh;
   overflow: hidden;
@@ -421,11 +421,12 @@ body.in-game .main-container {
 #screen-game.active {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: 100dvh;
   max-height: 100dvh;
   overflow: hidden;
   gap: 6px;
-  justify-content: space-between;
+  padding: 16px 8px 6px 8px; /* Breathing room padding at top */
+  box-sizing: border-box;
   align-items: center;
 }
 
@@ -433,12 +434,12 @@ body.in-game .main-container {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  max-width: 540px;
+  max-width: 520px;
   width: 100%;
   margin: 0 auto;
   height: 100%;
   max-height: 100%;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: stretch;
   box-sizing: border-box;
   overflow: hidden;
@@ -453,7 +454,7 @@ body.in-game .main-container {
   width: 100%;
   box-sizing: border-box;
   flex-shrink: 0;
-  height: 36px;
+  height: 34px;
 }
 
 .game-top-left {
@@ -465,20 +466,41 @@ body.in-game .main-container {
 .game-level-pill {
   font-size: 13px;
   font-weight: 800;
-  padding: 4px 10px;
+  padding: 3px 10px;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-full);
   color: var(--accent-gold);
 }
 
+/* AI Status Dot (Green = Online, Red = Offline) */
+.ai-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.ai-status-dot.online {
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981, 0 0 16px rgba(16, 185, 129, 0.6);
+  border: 1.5px solid #34d399;
+}
+
+.ai-status-dot.offline {
+  background: #ef4444;
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
+  border: 1.5px solid #f87171;
+}
+
 .game-timer-pill {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   color: var(--accent-cyan);
   background: var(--bg-card);
-  padding: 4px 14px;
+  padding: 3px 12px;
   border-radius: var(--radius-full);
   border: 1px solid var(--border-color);
   letter-spacing: 0.05em;
@@ -491,8 +513,8 @@ body.in-game .main-container {
 }
 
 .btn-icon-action {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
   background: var(--bg-card);
@@ -501,7 +523,7 @@ body.in-game .main-container {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 17px;
+  font-size: 16px;
   transition: transform 0.15s ease, background 0.15s ease;
   user-select: none;
 }
@@ -533,17 +555,17 @@ body.in-game .main-container {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 6px 12px;
+  padding: 6px 10px;
   text-align: center;
   box-shadow: var(--shadow-sm);
   flex-shrink: 0;
 }
 
 .source-sentence {
-  font-size: clamp(14px, 2.2vh, 18px);
+  font-size: clamp(13.5px, 2.2vh, 17px);
   font-weight: 700;
   color: #fff;
-  line-height: 1.35;
+  line-height: 1.3;
   margin: 0;
 }
 
@@ -552,20 +574,20 @@ body.in-game .main-container {
   background: rgba(10, 15, 29, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-md);
-  padding: 4px 8px;
+  padding: 3px 6px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  min-height: 34px;
+  gap: 5px;
+  min-height: 32px;
   flex-shrink: 0;
 }
 
 .word-slot {
-  padding: 3px 8px;
+  padding: 2px 7px;
   border-radius: var(--radius-sm);
-  font-size: clamp(12px, 1.8vh, 15px);
+  font-size: clamp(11px, 1.8vh, 14px);
   font-weight: 700;
   display: inline-flex;
   align-items: center;
@@ -605,15 +627,15 @@ body.in-game .main-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 6px;
+  padding: 0 4px;
   background: transparent;
-  height: 22px;
-  min-height: 22px;
+  height: 20px;
+  min-height: 20px;
   flex-shrink: 0;
 }
 
 .live-swiped-text {
-  font-size: clamp(15px, 2.4vh, 20px);
+  font-size: clamp(14px, 2.2vh, 18px);
   font-weight: 900;
   letter-spacing: 0.15em;
   color: var(--accent-cyan);
@@ -622,7 +644,7 @@ body.in-game .main-container {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  min-height: 20px;
+  min-height: 18px;
 }
 
 .live-swiped-text span {
@@ -636,14 +658,17 @@ body.in-game .main-container {
 }
 
 /* ==========================================================================
-   MATRIX GRID & SVG TRAIL
+   MATRIX GRID & SVG TRAIL (STRICTLY PINNED TO BOTTOM)
    ========================================================================== */
 .matrix-wrapper {
   position: relative;
-  margin: auto auto 0 auto; /* Sticks directly to bottom! */
+  margin-top: auto !important; /* Pushes matrix completely to bottom */
+  margin-bottom: 0 !important;
+  margin-left: auto;
+  margin-right: auto;
   width: 100%;
-  max-width: min(calc(100dvh - 180px), min(96vw, 480px));
-  max-height: min(calc(100dvh - 180px), min(96vw, 480px));
+  max-width: min(calc(100dvh - 200px), min(96vw, 480px));
+  max-height: min(calc(100dvh - 200px), min(96vw, 480px));
   aspect-ratio: 1 / 1;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -894,15 +919,24 @@ body.in-game .main-container {
 
 /* Responsive adjustments (Mobile & Single-Screen Fitting) */
 @media (max-width: 640px) {
+  html, body, .main-container {
+    overflow-x: hidden !important;
+    max-width: 100vw;
+    width: 100%;
+  }
+
   body.in-game .main-container {
-    padding: 4px 6px 6px 6px;
+    padding: 0;
     height: 100dvh;
     max-height: 100dvh;
   }
   
+  /* Fix Horizontal Scroll on Dashboard */
   .app-header {
     height: 48px;
     padding: 0 10px;
+    max-width: 100vw;
+    overflow: hidden;
   }
 
   .brand-title {
@@ -910,70 +944,114 @@ body.in-game .main-container {
   }
 
   .header-status {
-    gap: 8px;
+    gap: 6px;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  /* Hide non-essential badges from mobile dashboard header */
+  .header-status #header-source-badge,
+  .header-status #header-topic-badge,
+  .header-status #header-difficulty-badge {
+    display: none !important;
+  }
+
+  .header-status .badge {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .dashboard-hero {
+    padding: 18px 8px;
+    max-width: 100%;
+  }
+
+  .levels-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 0 4px;
+    max-width: 100%;
+  }
+
+  /* In-Game Arena on Mobile */
+  #screen-game.active {
+    padding: 14px 6px 4px 6px; /* Top padding */
+    height: 100dvh;
+    max-height: 100dvh;
   }
 
   .game-arena {
     gap: 4px;
     height: 100%;
     max-height: 100%;
-    justify-content: space-between;
+    justify-content: flex-start;
   }
   
+  .game-top-bar {
+    height: 32px;
+  }
+
   .sentence-card {
     padding: 5px 8px;
   }
   
   .source-sentence {
-    font-size: 14px;
+    font-size: 13.5px;
     line-height: 1.25;
   }
   
   .assembly-bar {
-    padding: 3px 6px;
-    min-height: 30px;
-    gap: 4px;
+    padding: 2px 4px;
+    min-height: 28px;
+    gap: 3px;
   }
 
   .word-slot {
-    font-size: 11.5px;
-    padding: 2px 6px;
+    font-size: 11px;
+    padding: 2px 5px;
   }
 
   .live-tray {
-    height: 20px;
-    min-height: 20px;
-  }
-
-  .live-swiped-text {
-    font-size: 16px;
+    height: 18px;
     min-height: 18px;
   }
 
+  .live-swiped-text {
+    font-size: 15px;
+    min-height: 16px;
+  }
+
   .matrix-wrapper {
-    margin: auto auto 0 auto;
+    margin-top: auto !important; /* Pinned to very bottom */
+    margin-bottom: 0 !important;
+    margin-left: auto;
+    margin-right: auto;
     width: 100%;
-    max-width: min(calc(100dvh - 160px), 98vw);
-    max-height: min(calc(100dvh - 160px), 98vw);
+    max-width: min(calc(100dvh - 195px), 98vw);
+    max-height: min(calc(100dvh - 195px), 98vw);
     padding: 4px;
     border-radius: var(--radius-md);
   }
   
   .btn-icon-action {
-    width: 32px;
-    height: 32px;
-    font-size: 15px;
+    width: 30px;
+    height: 30px;
+    font-size: 14px;
   }
 }
 
 @media (max-height: 700px) {
   body.in-game .main-container {
-    padding: 2px 4px 4px 4px;
+    padding: 0;
   }
 
   .app-header {
     height: 42px;
     padding: 0 6px;
+  }
+
+  #screen-game.active {
+    padding: 10px 4px 2px 4px;
   }
 
   .game-arena {
@@ -985,24 +1063,25 @@ body.in-game .main-container {
   }
 
   .source-sentence {
-    font-size: 13px;
+    font-size: 12.5px;
   }
 
   .assembly-bar {
     padding: 2px 4px;
-    min-height: 26px;
+    min-height: 25px;
     gap: 3px;
   }
 
   .word-slot {
-    font-size: 11px;
+    font-size: 10.5px;
     padding: 1px 4px;
   }
 
   .matrix-wrapper {
-    margin: auto auto 0 auto;
-    max-width: min(calc(100dvh - 145px), 98vw);
-    max-height: min(calc(100dvh - 145px), 98vw);
+    margin-top: auto !important;
+    margin-bottom: 0 !important;
+    max-width: min(calc(100dvh - 170px), 98vw);
+    max-height: min(calc(100dvh - 170px), 98vw);
     padding: 3px;
   }
 }

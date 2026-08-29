@@ -72,14 +72,12 @@ class MatrixGameEngine {
     }
 
     const isAi = this.roundData && this.roundData.content_source === "ai";
-    const badgeClass = isAi ? "badge badge-source badge-source-ai game-source-badge" : "badge badge-source badge-source-dataset game-source-badge";
-    const badgeText = isAi ? "🟢 AI Online" : "⚪ AI Offline";
 
-    document.querySelectorAll(".game-source-badge").forEach(el => {
-      el.className = badgeClass;
-      el.textContent = badgeText;
-      el.style.display = "inline-flex";
-    });
+    const sourceDot = document.getElementById("arena-source-dot");
+    if (sourceDot) {
+      sourceDot.className = isAi ? "ai-status-dot online" : "ai-status-dot offline";
+      sourceDot.title = isAi ? "AI Online" : "AI Offline";
+    }
 
     const headerLevel = document.getElementById("header-level-badge");
     if (headerLevel && this.roundData && this.roundData.level) {
@@ -88,19 +86,7 @@ class MatrixGameEngine {
 
     const gameLvlTag = document.getElementById("game-level-tag");
     if (gameLvlTag && this.roundData && this.roundData.level) {
-      gameLvlTag.textContent = `🏆 ${this.roundData.level}`;
-    }
-
-    const topicBadge = document.getElementById("game-topic-badge");
-    if (topicBadge && this.roundData) {
-      topicBadge.style.display = "inline-flex";
-      topicBadge.textContent = `📌 ${this.roundData.topic || "General"}`;
-    }
-
-    const diffBadge = document.getElementById("game-difficulty-badge");
-    if (diffBadge && this.roundData) {
-      diffBadge.style.display = "inline-flex";
-      diffBadge.textContent = `⚡ Dif: ${this.roundData.difficulty.toFixed(2)}`;
+      gameLvlTag.textContent = this.roundData.level;
     }
   }
 
@@ -481,7 +467,7 @@ class MatrixGameEngine {
     const totalSec = Math.floor(this.activeTimeSeconds);
     const mins = String(Math.floor(totalSec / 60)).padStart(2, "0");
     const secs = String(totalSec % 60).padStart(2, "0");
-    this.timerDisplayEl.textContent = `⏱️ ${mins}:${secs}`;
+    this.timerDisplayEl.textContent = `${mins}:${secs}`;
   }
 
   togglePause() {
