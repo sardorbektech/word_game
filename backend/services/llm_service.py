@@ -8,8 +8,37 @@ from backend.config import settings
 from backend.data.dataset import DATASET
 
 
+# Diverse creative situational contexts to prevent LLM from repeating default textbook sentences
+DIVERSE_SCENARIOS = [
+    "at a vibrant morning cafe or bakery drinking tea",
+    "talking about daily morning routines and healthy breakfast",
+    "family gathering and cooking a traditional evening dinner",
+    "planning a weekend nature trip or walk near the mountains",
+    "meeting a friendly new friend or neighbor in the green park",
+    "buying ripe fresh fruits and vegetables at a local bazaar",
+    "enjoying cozy rainy weather at home with a hot drink",
+    "discussing an exciting creative hobby, sport, or game",
+    "riding a bicycle through the clean and sunny city streets",
+    "reading an inspiring adventure book in a quiet library",
+    "caring for a playful pet or watching birds in the garden",
+    "arriving at a modern railway station or bright airport",
+    "learning something fascinating and useful in a classroom",
+    "listening to beautiful relaxing melodies in the evening",
+    "making a handmade art piece or repairing household items",
+    "celebrating a cheerful birthday gathering with close friends",
+    "ordering delicious meal and desserts at a cozy restaurant",
+    "visiting a historic architectural museum or modern exhibition",
+    "cleaning and decorating a bright and welcoming room",
+    "watching an interesting nature documentary about oceans",
+    "watering colorful garden flowers and tall green trees",
+    "taking a refreshing brisk walk in the cool morning air",
+    "discussing memorable journeys and visiting famous cities",
+    "shopping for comfortable seasonal clothes and warm shoes"
+]
+
+
 class LLMService:
-    """Generates adaptive game content via OpenAI API or 1000-sentence offline curated dataset."""
+    """Generates adaptive game content via OpenAI API or curated dataset with 100% diversity."""
 
     @classmethod
     def generate_sentence(
@@ -17,18 +46,25 @@ class LLMService:
         level: str = "A1",
         difficulty: float = 0.35,
         topic: str = "General",
-        weak_words: Optional[List[str]] = None
+        weak_words: Optional[List[str]] = None,
+        recent_sentences: Optional[List[str]] = None
     ) -> Dict[str, Any]:
-        """Requests new content from GPT-5.6 Luna or returns random sentence from curated dataset."""
+        """Requests fresh unique content from OpenAI or returns non-repeated sentence from curated dataset."""
         if settings.OPENAI_API_KEY and settings.OPENAI_API_KEY.strip():
             try:
-                res = cls._call_openai(level, difficulty, topic, weak_words or [])
+                res = cls._call_openai(
+                    level=level,
+                    difficulty=difficulty,
+                    topic=topic,
+                    weak_words=weak_words or [],
+                    recent_sentences=recent_sentences or []
+                )
                 res["content_source"] = "ai"
                 return res
             except Exception as e:
                 print(f"[LLMService] OpenAI call error: {e}. Using offline dataset.")
 
-        res = cls._get_fallback_sentence(level, topic, weak_words or [])
+        res = cls._get_fallback_sentence(level, topic, weak_words or [], recent_sentences or [])
         res["content_source"] = "dataset"
         return res
 
@@ -38,12 +74,15 @@ class LLMService:
         level: str,
         difficulty: float,
         topic: str,
-        weak_words: List[str]
+        weak_words: List[str],
+        recent_sentences: List[str]
     ) -> Dict[str, Any]:
-        """Calls OpenAI API with strict JSON schema and robust parsing for all CEFR levels (A1 to C1)."""
+        """Calls OpenAI API with strict JSON schema and dynamic context to prevent repetitive sentences."""
         client = OpenAI(api_key=settings.OPENAI_API_KEY, timeout=4.0)
 
         weak_words_str = ", ".join(weak_words) if weak_words else "none"
+        scenario = random.choice(DIVERSE_SCENARIOS)
+        random_seed = random.randint(10000, 999999)
 
         level_guidance = {
             "A1": "Beginner level: Simple basic grammar (e.g. Present Simple), daily life words, 4-6 words.",
@@ -53,6 +92,11 @@ class LLMService:
             "C1": "Advanced level: Sophisticated vocabulary, subjunctive/inversion, nuanced idioms, 7-10 words."
         }.get(level.upper(), "Adaptive CEFR English sentence, 5-9 words.")
 
+        avoid_clause = ""
+        if recent_sentences:
+            avoid_list_str = "; ".join([f'"{s}"' for s in recent_sentences[-6:]])
+            avoid_clause = f"\n- CRITICAL DIVERSITY: DO NOT repeat or resemble any of these recently played sentences: [{avoid_list_str}]."
+
         system_prompt = (
             "You are an expert English language educational engine. "
             "Your output must be a single valid JSON object with the exact keys: "
@@ -60,11 +104,18 @@ class LLMService:
             "Do NOT include any commentary, explanations, or text outside the JSON object."
         )
 
-        user_prompt = f"""Generate an English-Uzbek learning pair for an adaptive puzzle game.
+        user_prompt = f"""Generate a unique and engaging English-Uzbek learning pair for an adaptive puzzle game.
 - CEFR Level: {level.upper()} ({level_guidance})
 - Difficulty Metric: {difficulty:.2f}
 - Topic: {topic}
-- Priority words to include if suitable: [{weak_words_str}]
+- Situational Scene / Creative Prompt: {scenario}
+- Random Session Seed: #{random_seed}
+- Priority words to include if suitable: [{weak_words_str}]{avoid_clause}
+
+CRITICAL RULES:
+1. Every generated sentence must be unique, natural, and distinct.
+2. The Uzbek sentence must be a natural, idiomatically accurate translation.
+3. Words in the 'words' array must match the English sentence in exact order without punctuation.
 
 Output format strictly adhering to JSON:
 {{
@@ -119,18 +170,24 @@ Output format strictly adhering to JSON:
         cls,
         level: str,
         topic: str,
-        weak_words: List[str]
+        weak_words: List[str],
+        recent_sentences: Optional[List[str]] = None
     ) -> Dict[str, Any]:
-        """Provides a truly random sentence from the curated dataset for the given CEFR level."""
+        """Provides a truly random sentence from the curated dataset for the given CEFR level avoiding repeats."""
         lvl_key = (level or "A1").strip().upper()
         if lvl_key not in DATASET or not DATASET[lvl_key]:
             lvl_key = "A1"
 
-        level_items = DATASET[lvl_key]
+        level_items = list(DATASET[lvl_key])
+        recent_set = set(s.strip().lower() for s in (recent_sentences or []))
+
+        # Filter out recently used sentences if possible
+        unseen_items = [item for item in level_items if item["target_text"].strip().lower() not in recent_set]
+        pool = unseen_items if unseen_items else level_items
 
         # If user picked a specific topic (and it's not General), prioritize sentences matching topic
         if topic and topic.lower() != "general":
-            topic_matches = [item for item in level_items if item.get("topic", "").lower() == topic.lower()]
+            topic_matches = [item for item in pool if item.get("topic", "").lower() == topic.lower()]
             if topic_matches:
                 chosen = random.choice(topic_matches)
                 return {
@@ -140,8 +197,8 @@ Output format strictly adhering to JSON:
                     "words": list(chosen["words"])
                 }
 
-        # Otherwise random selection from the sentences in this level
-        chosen = random.choice(level_items)
+        # Otherwise random selection from the candidate pool
+        chosen = random.choice(pool)
         return {
             "topic": chosen.get("topic", topic),
             "source_text": chosen["source_text"],

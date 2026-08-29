@@ -56,12 +56,19 @@ def generate_round(
     due_words = SpacedRepetitionService.get_words_due_for_review(db, current_user.id, limit=2)
     priority_words = list(set(weak_words + due_words))
 
-    # 3. Request adaptive sentence
+    # 3. Query recently played sentences for this user to avoid repeats
+    recent_rounds = db.query(GameRound.target_text).filter(
+        GameRound.user_id == current_user.id
+    ).order_by(GameRound.created_at.desc()).limit(10).all()
+    recent_sentences = [r[0] for r in recent_rounds if r[0]]
+
+    # 4. Request adaptive sentence with anti-repetition filter
     llm_result = LLMService.generate_sentence(
         level=level,
         difficulty=curr_difficulty,
         topic=topic,
-        weak_words=priority_words
+        weak_words=priority_words,
+        recent_sentences=recent_sentences
     )
 
     words_list = llm_result["words"]
