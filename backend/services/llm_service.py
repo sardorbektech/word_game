@@ -41,7 +41,7 @@ class LLMService:
         weak_words: List[str]
     ) -> Dict[str, Any]:
         """Calls OpenAI GPT-5.6 Luna API with structured prompt."""
-        client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        client = OpenAI(api_key=settings.OPENAI_API_KEY, timeout=3.0)
 
         weak_words_str = ", ".join(weak_words) if weak_words else "none"
 
@@ -79,8 +79,7 @@ Return ONLY JSON:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
-            temperature=0.8,
-            max_tokens=300
+            max_completion_tokens=400
         )
 
         raw_content = response.choices[0].message.content.strip()
@@ -89,10 +88,10 @@ Return ONLY JSON:
         cleaned_json = re.sub(r"\s*```$", "", cleaned_json).strip()
 
         data = json.loads(cleaned_json)
-        
+
         raw_words = data.get("words", [])
         clean_words = [re.sub(r"[^a-zA-Z0-9'-]", "", w) for w in raw_words if re.sub(r"[^a-zA-Z0-9'-]", "", w)]
-        
+
         return {
             "topic": data.get("topic", topic),
             "source_text": data.get("source_text"),
@@ -113,7 +112,7 @@ Return ONLY JSON:
             lvl_key = "A1"
 
         level_items = DATASET[lvl_key]
-        
+
         # If user picked a specific topic (and it's not General), prioritize sentences matching topic
         if topic and topic.lower() != "general":
             topic_matches = [item for item in level_items if item.get("topic", "").lower() == topic.lower()]

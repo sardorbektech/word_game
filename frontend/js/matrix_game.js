@@ -68,23 +68,37 @@ class MatrixGameEngine {
   }
 
   renderHeaderInfo() {
+    const isAi = this.roundData && this.roundData.content_source === "ai";
+
     const srcEl = document.getElementById("source-sentence");
     if (srcEl && this.roundData) {
+      srcEl.classList.remove("sentence-loading");
       srcEl.textContent = this.roundData.source_text;
     }
 
-    const isAi = this.roundData && this.roundData.content_source === "ai";
+    const srcTag = document.getElementById("sentence-source-tag");
+    if (srcTag) {
+      if (isAi) {
+        srcTag.className = "sentence-source-tag ai";
+        srcTag.textContent = "✨ AI";
+        srcTag.title = "OpenAI tomonidan real-vaqtda yaratilgan";
+      } else {
+        srcTag.className = "sentence-source-tag dataset";
+        srcTag.textContent = "📌 Default";
+        srcTag.title = "Standart 500 ta oltin gaplar bazasidan";
+      }
+    }
 
     const sourceDot = document.getElementById("arena-source-dot");
     if (sourceDot) {
       sourceDot.className = isAi ? "ai-status-badge online" : "ai-status-badge offline";
       sourceDot.textContent = "AI";
-      sourceDot.title = isAi ? "AI Online (GPT-5.6)" : "AI Offline (Dataset)";
+      sourceDot.title = isAi ? "AI Online (GPT-5.6)" : "AI Offline (Default Dataset)";
     }
 
     const headerLevel = document.getElementById("header-level-badge");
     if (headerLevel && this.roundData && this.roundData.level) {
-      headerLevel.textContent = `🏆 ${this.roundData.level}`;
+      headerLevel.textContent = this.roundData.level;
     }
 
     const gameLvlTag = document.getElementById("game-level-tag");
@@ -399,6 +413,9 @@ class MatrixGameEngine {
 
     // Check if entire sentence is completed
     if (this.currentWordIndex >= this.roundData.words.length) {
+      if (window.app && typeof window.app.prefetchNextRound === "function") {
+        window.app.prefetchNextRound(this.roundData.level);
+      }
       this.completeRound();
     }
   }

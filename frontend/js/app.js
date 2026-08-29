@@ -23,6 +23,8 @@ class AppController {
     this.progressSummary = null;
     this.userSettings = null;
     this.activeGameLevel = "A1";
+    this.prefetchedRounds = {};
+    this.isPrefetching = {};
 
     this.initTheme();
     this.initEventListeners();
@@ -260,8 +262,12 @@ class AppController {
   async loadDashboardData() {
     try {
       this.progressSummary = await ApiClient.getProgressSummary();
+      if (this.progressSummary && this.progressSummary.current_level) {
+        this.activeGameLevel = this.progressSummary.current_level;
+      }
       this.renderLevelCards();
       this.renderDashboardStats();
+      this.prefetchNextRound(this.activeGameLevel);
     } catch (e) {
       console.error("Failed to load progress summary:", e);
     }
@@ -335,23 +341,81 @@ class AppController {
     this.startNewGame(level);
   }
 
+  async prefetchNextRound(level = null) {
+    const targetLevel = level || this.activeGameLevel || "A1";
+    if (this.isPrefetching[targetLevel]) return;
+    this.isPrefetching[targetLevel] = true;
+
+    try {
+      const prefetchPromise = ApiClient.generateGame(targetLevel);
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Prefetch timeout")), 3000));
+      const data = await Promise.race([prefetchPromise, timeoutPromise]);
+      if (data && data.words && data.words.length > 0) {
+        this.prefetchedRounds[targetLevel] = data;
+      }
+    } catch (e) {
+      console.log(`[Prefetch] Background prefetch for ${targetLevel} fell back or timed out:`, e);
+    } finally {
+      this.isPrefetching[targetLevel] = false;
+    }
+  }
+
   async startNewGame(level = null) {
     const targetLevel = level || this.activeGameLevel || "A1";
     this.activeGameLevel = targetLevel;
 
-    // Immediately reflect selected level in top header
     const headerLevel = document.getElementById("header-level-badge");
-    if (headerLevel) headerLevel.textContent = `🏆 ${targetLevel}`;
+    if (headerLevel) headerLevel.textContent = targetLevel;
+
+    this.showScreen("game");
+
+    // 1. If round already pre-fetched in memory, start IMMEDIATELY (0ms wait time!)
+    if (this.prefetchedRounds[targetLevel]) {
+      const cachedRound = this.prefetchedRounds[targetLevel];
+      delete this.prefetchedRounds[targetLevel];
+      window.matrixGame.loadRound(cachedRound);
+      // Immediately start background prefetch for the next round!
+      this.prefetchNextRound(targetLevel);
+      return;
+    }
+
+    // 2. Otherwise show sleek AI loading status on sentence card
+    const srcEl = document.getElementById("source-sentence");
+    if (srcEl) {
+      srcEl.classList.add("sentence-loading");
+      srcEl.textContent = "✨ AI yangi gap tayyorlamoqda...";
+    }
+
+    const srcTag = document.getElementById("sentence-source-tag");
+    if (srcTag) {
+      srcTag.className = "sentence-source-tag dataset";
+      srcTag.textContent = "Yuklanmoqda...";
+    }
 
     try {
-      this.showScreen("game");
-      const roundData = await ApiClient.generateGame(targetLevel);
+      // Fetch with 3.0s timeout
+      const fetchPromise = ApiClient.generateGame(targetLevel);
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("AI timeout")), 3000));
+      
+      let roundData;
+      try {
+        roundData = await Promise.race([fetchPromise, timeoutPromise]);
+      } catch (err) {
+        console.warn("AI response exceeded 3s, requesting fast dataset fallback:", err);
+        roundData = await ApiClient.generateGame(targetLevel, "General", "auto");
+      }
+
       if (roundData && roundData.level) {
         this.activeGameLevel = roundData.level;
-        if (headerLevel) headerLevel.textContent = `🏆 ${roundData.level}`;
+        if (headerLevel) headerLevel.textContent = roundData.level;
       }
+
       window.matrixGame.loadRound(roundData);
+
+      // Start prefetching next round in background
+      this.prefetchNextRound(targetLevel);
     } catch (err) {
+      console.error("Game load error:", err);
       alert("O'yinni yuklashda xatolik: " + err.message);
       this.showScreen("dashboard");
     }
