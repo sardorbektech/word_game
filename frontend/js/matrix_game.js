@@ -110,6 +110,7 @@ class MatrixGameEngine {
     this.selectedPath = [];
     this.clearSvgLines();
     this.clearLiveTray();
+    document.body.classList.remove("in-game");
 
     if (this.gridContainer) this.gridContainer.innerHTML = "";
     if (this.assemblyBarEl) this.assemblyBarEl.innerHTML = "";
@@ -194,13 +195,33 @@ class MatrixGameEngine {
     this.gridContainer.style.gridTemplateColumns = `repeat(${dimension}, 1fr)`;
     this.gridContainer.style.gridTemplateRows = `repeat(${dimension}, 1fr)`;
 
-    if (dimension >= 9) {
-      this.gridContainer.style.gap = "4px";
-    } else if (dimension >= 7) {
-      this.gridContainer.style.gap = "6px";
+    let gapSize = "6px";
+    let fontSize = "22px";
+    let borderRadius = "8px";
+
+    if (dimension <= 6) {
+      gapSize = "6px";
+      fontSize = "clamp(16px, 4.4vw, 24px)";
+      borderRadius = "8px";
+    } else if (dimension === 7) {
+      gapSize = "5px";
+      fontSize = "clamp(14px, 3.8vw, 20px)";
+      borderRadius = "7px";
+    } else if (dimension === 8) {
+      gapSize = "4px";
+      fontSize = "clamp(12px, 3.2vw, 17px)";
+      borderRadius = "6px";
+    } else if (dimension === 9) {
+      gapSize = "3px";
+      fontSize = "clamp(11px, 2.7vw, 15px)";
+      borderRadius = "5px";
     } else {
-      this.gridContainer.style.gap = "8px";
+      gapSize = "2px";
+      fontSize = "clamp(10px, 2.2vw, 13px)";
+      borderRadius = "4px";
     }
+
+    this.gridContainer.style.gap = gapSize;
 
     for (let r = 0; r < dimension; r++) {
       for (let c = 0; c < dimension; c++) {
@@ -211,14 +232,8 @@ class MatrixGameEngine {
         tile.dataset.row = r;
         tile.dataset.col = c;
         tile.dataset.char = char;
-
-        if (dimension <= 6) {
-          tile.style.fontSize = "clamp(14px, 2.8vh, 22px)";
-        } else if (dimension <= 8) {
-          tile.style.fontSize = "clamp(12px, 2.3vh, 18px)";
-        } else {
-          tile.style.fontSize = "clamp(10px, 1.9vh, 15px)";
-        }
+        tile.style.fontSize = fontSize;
+        tile.style.borderRadius = borderRadius;
 
         // Mouse Listeners
         tile.addEventListener("mousedown", (e) => {

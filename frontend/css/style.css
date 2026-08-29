@@ -406,29 +406,38 @@ body {
   gap: 6px;
 }
 
-/* ==========================================================================
-   GAME SCREEN (SINGLE-SCREEN / NO-SCROLL LAYOUT)
-   ========================================================================== */
+/* When in Game View: Hide main site header completely to avoid clutter and horizontal overflow */
+body.in-game .app-header {
+  display: none !important;
+}
+
+body.in-game .main-container {
+  padding: 8px 10px;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
 #screen-game.active {
   display: flex;
   flex-direction: column;
   height: 100%;
-  max-height: calc(100dvh - 80px);
+  max-height: 100dvh;
   overflow: hidden;
-  gap: 8px;
-  justify-content: flex-start;
+  gap: 6px;
+  justify-content: space-between;
   align-items: center;
 }
 
 .game-arena {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  max-width: 580px;
+  gap: 6px;
+  max-width: 540px;
   width: 100%;
   margin: 0 auto;
   height: 100%;
-  max-height: calc(100dvh - 85px);
+  max-height: 100%;
   justify-content: space-between;
   align-items: stretch;
   box-sizing: border-box;
@@ -440,10 +449,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 2px 4px;
+  padding: 0 2px;
   width: 100%;
   box-sizing: border-box;
   flex-shrink: 0;
+  height: 36px;
 }
 
 .game-top-left {
@@ -523,7 +533,7 @@ body {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 8px 14px;
+  padding: 6px 12px;
   text-align: center;
   box-shadow: var(--shadow-sm);
   flex-shrink: 0;
@@ -542,18 +552,18 @@ body {
   background: rgba(10, 15, 29, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-md);
-  padding: 6px 10px;
+  padding: 4px 8px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-height: 38px;
+  min-height: 34px;
   flex-shrink: 0;
 }
 
 .word-slot {
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: var(--radius-sm);
   font-size: clamp(12px, 1.8vh, 15px);
   font-weight: 700;
@@ -595,15 +605,15 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2px 10px;
+  padding: 0 6px;
   background: transparent;
-  height: 28px;
-  min-height: 28px;
+  height: 22px;
+  min-height: 22px;
   flex-shrink: 0;
 }
 
 .live-swiped-text {
-  font-size: clamp(16px, 2.6vh, 22px);
+  font-size: clamp(15px, 2.4vh, 20px);
   font-weight: 900;
   letter-spacing: 0.15em;
   color: var(--accent-cyan);
@@ -612,7 +622,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  min-height: 24px;
+  min-height: 20px;
 }
 
 .live-swiped-text span {
@@ -630,20 +640,23 @@ body {
    ========================================================================== */
 .matrix-wrapper {
   position: relative;
-  margin: 0 auto;
+  margin: auto auto 0 auto; /* Sticks directly to bottom! */
   width: 100%;
-  max-width: min(52dvh, min(94vw, 480px));
-  max-height: min(52dvh, min(94vw, 480px));
+  max-width: min(calc(100dvh - 180px), min(96vw, 480px));
+  max-height: min(calc(100dvh - 180px), min(96vw, 480px));
   aspect-ratio: 1 / 1;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 8px;
+  padding: 6px;
   box-shadow: var(--shadow-lg);
   touch-action: none;
   box-sizing: border-box;
   overflow: hidden;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .svg-overlay {
@@ -881,6 +894,12 @@ body {
 
 /* Responsive adjustments (Mobile & Single-Screen Fitting) */
 @media (max-width: 640px) {
+  body.in-game .main-container {
+    padding: 4px 6px 6px 6px;
+    height: 100dvh;
+    max-height: 100dvh;
+  }
+  
   .app-header {
     height: 48px;
     padding: 0 10px;
@@ -890,59 +909,56 @@ body {
     display: none;
   }
 
-  .main-container {
-    padding: 4px 6px;
+  .header-status {
+    gap: 8px;
   }
-  
+
   .game-arena {
-    gap: 6px;
-    max-height: calc(100dvh - 65px);
+    gap: 4px;
+    height: 100%;
+    max-height: 100%;
+    justify-content: space-between;
   }
   
   .sentence-card {
-    padding: 6px 10px;
+    padding: 5px 8px;
   }
   
   .source-sentence {
     font-size: 14px;
+    line-height: 1.25;
   }
   
   .assembly-bar {
-    padding: 4px 6px;
-    min-height: 32px;
+    padding: 3px 6px;
+    min-height: 30px;
     gap: 4px;
   }
 
   .word-slot {
-    font-size: 12px;
-    padding: 3px 6px;
+    font-size: 11.5px;
+    padding: 2px 6px;
   }
 
   .live-tray {
-    height: 24px;
-    min-height: 24px;
+    height: 20px;
+    min-height: 20px;
   }
 
   .live-swiped-text {
-    font-size: 17px;
+    font-size: 16px;
+    min-height: 18px;
   }
 
   .matrix-wrapper {
-    max-width: min(48dvh, 92vw);
-    max-height: min(48dvh, 92vw);
-    padding: 5px;
+    margin: auto auto 0 auto;
+    width: 100%;
+    max-width: min(calc(100dvh - 160px), 98vw);
+    max-height: min(calc(100dvh - 160px), 98vw);
+    padding: 4px;
     border-radius: var(--radius-md);
   }
   
-  .matrix-grid {
-    gap: 3px;
-  }
-  
-  .matrix-cell, .matrix-tile {
-    font-size: clamp(9px, 3.5vw, 15px);
-    border-radius: 4px;
-  }
-
   .btn-icon-action {
     width: 32px;
     height: 32px;
@@ -951,22 +967,21 @@ body {
 }
 
 @media (max-height: 700px) {
-  .app-header {
-    height: 44px;
-    padding: 0 8px;
+  body.in-game .main-container {
+    padding: 2px 4px 4px 4px;
   }
 
-  .main-container {
-    padding: 2px 4px;
+  .app-header {
+    height: 42px;
+    padding: 0 6px;
   }
 
   .game-arena {
-    gap: 4px;
-    max-height: calc(100dvh - 55px);
+    gap: 3px;
   }
 
   .sentence-card {
-    padding: 4px 8px;
+    padding: 4px 6px;
   }
 
   .source-sentence {
@@ -975,18 +990,19 @@ body {
 
   .assembly-bar {
     padding: 2px 4px;
-    min-height: 28px;
+    min-height: 26px;
     gap: 3px;
   }
 
   .word-slot {
     font-size: 11px;
-    padding: 2px 5px;
+    padding: 1px 4px;
   }
 
   .matrix-wrapper {
-    max-width: min(45dvh, 320px);
-    max-height: min(45dvh, 320px);
-    padding: 4px;
+    margin: auto auto 0 auto;
+    max-width: min(calc(100dvh - 145px), 98vw);
+    max-height: min(calc(100dvh - 145px), 98vw);
+    padding: 3px;
   }
 }

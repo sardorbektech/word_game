@@ -203,6 +203,11 @@ class AppController {
       target.classList.add("active");
       this.currentScreen = screenId;
     }
+    if (screenId === "game") {
+      document.body.classList.add("in-game");
+    } else {
+      document.body.classList.remove("in-game");
+    }
   }
 
   openModal(modalId) {
