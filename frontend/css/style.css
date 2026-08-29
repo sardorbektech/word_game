@@ -424,8 +424,8 @@ body.in-game .main-container {
   height: 100dvh;
   max-height: 100dvh;
   overflow: hidden;
-  gap: 6px;
-  padding: 16px 8px 6px 8px; /* Breathing room padding at top */
+  gap: 8px;
+  padding: 14px 10px 10px 10px; /* Comfortable padding at top */
   box-sizing: border-box;
   align-items: center;
 }
@@ -433,13 +433,13 @@ body.in-game .main-container {
 .game-arena {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  max-width: 520px;
+  gap: 8px;
+  max-width: 540px;
   width: 100%;
   margin: 0 auto;
   height: 100%;
   max-height: 100%;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: stretch;
   box-sizing: border-box;
   overflow: hidden;
@@ -450,57 +450,66 @@ body.in-game .main-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 2px;
+  padding: 0 4px;
   width: 100%;
   box-sizing: border-box;
   flex-shrink: 0;
-  height: 34px;
+  height: 36px;
 }
 
 .game-top-left {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .game-level-pill {
   font-size: 13px;
   font-weight: 800;
-  padding: 3px 10px;
+  padding: 4px 12px;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-full);
   color: var(--accent-gold);
 }
 
-/* AI Status Dot (Green = Online, Red = Offline) */
-.ai-status-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  display: inline-block;
+/* AI Status Badge (Text: "AI", Green = Online, Red = Offline) */
+.ai-status-badge {
+  font-size: 12px;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.05em;
   transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
 }
 
-.ai-status-dot.online {
-  background: #10b981;
-  box-shadow: 0 0 8px #10b981, 0 0 16px rgba(16, 185, 129, 0.6);
-  border: 1.5px solid #34d399;
+.ai-status-badge.online {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  text-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
 }
 
-.ai-status-dot.offline {
-  background: #ef4444;
-  box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
-  border: 1.5px solid #f87171;
+.ai-status-badge.offline {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  text-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
 }
 
 .game-timer-pill {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   color: var(--accent-cyan);
   background: var(--bg-card);
-  padding: 3px 12px;
+  padding: 4px 14px;
   border-radius: var(--radius-full);
   border: 1px solid var(--border-color);
   letter-spacing: 0.05em;
@@ -513,8 +522,8 @@ body.in-game .main-container {
 }
 
 .btn-icon-action {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
   background: var(--bg-card);
@@ -523,7 +532,7 @@ body.in-game .main-container {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: 17px;
   transition: transform 0.15s ease, background 0.15s ease;
   user-select: none;
 }
@@ -550,50 +559,50 @@ body.in-game .main-container {
   border-color: var(--accent-red);
 }
 
-/* Clean Uzbek Target Sentence */
+/* User-Friendly Uzbek Target Sentence Card */
 .sentence-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 6px 10px;
+  padding: 12px 16px;
   text-align: center;
   box-shadow: var(--shadow-sm);
   flex-shrink: 0;
 }
 
 .source-sentence {
-  font-size: clamp(13.5px, 2.2vh, 17px);
-  font-weight: 700;
+  font-size: clamp(14px, 2.2vh, 17.5px);
+  font-weight: 600;
   color: #fff;
-  line-height: 1.3;
+  line-height: 1.45;
   margin: 0;
 }
 
-/* Target Sentence Assembly Bar */
+/* User-Friendly Target Sentence Assembly Bar */
 .assembly-bar {
-  background: rgba(10, 15, 29, 0.7);
+  background: rgba(10, 15, 29, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-md);
-  padding: 3px 6px;
+  padding: 10px 14px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  min-height: 32px;
+  gap: 8px;
+  min-height: 46px;
   flex-shrink: 0;
 }
 
 .word-slot {
-  padding: 2px 7px;
+  padding: 5px 12px;
   border-radius: var(--radius-sm);
-  font-size: clamp(11px, 1.8vh, 14px);
+  font-size: clamp(12px, 1.9vh, 15px);
   font-weight: 700;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   transition: all 0.25s ease;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
 }
 
 .word-slot.completed {
@@ -627,15 +636,15 @@ body.in-game .main-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 4px;
+  padding: 0 6px;
   background: transparent;
-  height: 20px;
-  min-height: 20px;
+  height: 24px;
+  min-height: 24px;
   flex-shrink: 0;
 }
 
 .live-swiped-text {
-  font-size: clamp(14px, 2.2vh, 18px);
+  font-size: clamp(15px, 2.4vh, 20px);
   font-weight: 900;
   letter-spacing: 0.15em;
   color: var(--accent-cyan);
@@ -644,7 +653,7 @@ body.in-game .main-container {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  min-height: 18px;
+  min-height: 22px;
 }
 
 .live-swiped-text span {
@@ -667,13 +676,13 @@ body.in-game .main-container {
   margin-left: auto;
   margin-right: auto;
   width: 100%;
-  max-width: min(calc(100dvh - 200px), min(96vw, 480px));
-  max-height: min(calc(100dvh - 200px), min(96vw, 480px));
+  max-width: min(calc(100dvh - 230px), min(96vw, 480px));
+  max-height: min(calc(100dvh - 230px), min(96vw, 480px));
   aspect-ratio: 1 / 1;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 6px;
+  padding: 8px;
   box-shadow: var(--shadow-lg);
   touch-action: none;
   box-sizing: border-box;
@@ -1007,33 +1016,33 @@ body.in-game .main-container {
   }
 
   .sentence-card {
-    padding: 5px 8px;
+    padding: 10px 12px;
   }
   
   .source-sentence {
-    font-size: 13.5px;
-    line-height: 1.25;
+    font-size: 14px;
+    line-height: 1.35;
   }
   
   .assembly-bar {
-    padding: 2px 4px;
-    min-height: 28px;
-    gap: 3px;
+    padding: 6px 10px;
+    min-height: 38px;
+    gap: 6px;
   }
 
   .word-slot {
-    font-size: 11px;
-    padding: 2px 5px;
+    font-size: 12px;
+    padding: 4px 8px;
   }
 
   .live-tray {
-    height: 18px;
-    min-height: 18px;
+    height: 22px;
+    min-height: 22px;
   }
 
   .live-swiped-text {
-    font-size: 15px;
-    min-height: 16px;
+    font-size: 16px;
+    min-height: 18px;
   }
 
   .matrix-wrapper {
@@ -1042,16 +1051,16 @@ body.in-game .main-container {
     margin-left: auto;
     margin-right: auto;
     width: 100%;
-    max-width: min(calc(100dvh - 195px), 98vw);
-    max-height: min(calc(100dvh - 195px), 98vw);
-    padding: 4px;
+    max-width: min(calc(100dvh - 225px), 98vw);
+    max-height: min(calc(100dvh - 225px), 98vw);
+    padding: 6px;
     border-radius: var(--radius-md);
   }
   
   .btn-icon-action {
-    width: 30px;
-    height: 30px;
-    font-size: 14px;
+    width: 32px;
+    height: 32px;
+    font-size: 15px;
   }
 }
 
@@ -1066,37 +1075,37 @@ body.in-game .main-container {
   }
 
   #screen-game.active {
-    padding: 10px 4px 2px 4px;
+    padding: 8px 4px 2px 4px;
   }
 
   .game-arena {
-    gap: 3px;
+    gap: 4px;
   }
 
   .sentence-card {
-    padding: 4px 6px;
+    padding: 6px 8px;
   }
 
   .source-sentence {
-    font-size: 12.5px;
+    font-size: 13px;
   }
 
   .assembly-bar {
-    padding: 2px 4px;
-    min-height: 25px;
-    gap: 3px;
+    padding: 4px 6px;
+    min-height: 30px;
+    gap: 4px;
   }
 
   .word-slot {
-    font-size: 10.5px;
-    padding: 1px 4px;
+    font-size: 11px;
+    padding: 2px 5px;
   }
 
   .matrix-wrapper {
     margin-top: auto !important;
     margin-bottom: 0 !important;
-    max-width: min(calc(100dvh - 170px), 98vw);
-    max-height: min(calc(100dvh - 170px), 98vw);
-    padding: 3px;
+    max-width: min(calc(100dvh - 190px), 98vw);
+    max-height: min(calc(100dvh - 190px), 98vw);
+    padding: 4px;
   }
 }

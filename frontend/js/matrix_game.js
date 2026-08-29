@@ -77,8 +77,9 @@ class MatrixGameEngine {
 
     const sourceDot = document.getElementById("arena-source-dot");
     if (sourceDot) {
-      sourceDot.className = isAi ? "ai-status-dot online" : "ai-status-dot offline";
-      sourceDot.title = isAi ? "AI Online" : "AI Offline";
+      sourceDot.className = isAi ? "ai-status-badge online" : "ai-status-badge offline";
+      sourceDot.textContent = "AI";
+      sourceDot.title = isAi ? "AI Online (GPT-5.6)" : "AI Offline (Dataset)";
     }
 
     const headerLevel = document.getElementById("header-level-badge");
