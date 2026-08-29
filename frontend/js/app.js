@@ -207,12 +207,14 @@ class AppController {
       });
     }
 
-    // Logout
-    const btnLogout = document.getElementById("btn-logout");
+    // Logout (from Settings Modal)
+    const btnLogout = document.getElementById("btn-modal-logout") || document.getElementById("btn-logout");
     if (btnLogout) {
       btnLogout.addEventListener("click", () => {
-        ApiClient.removeToken();
-        window.location.reload();
+        if (confirm("Haqiqatan ham akkauntdan chiqmoqchimisiz?")) {
+          ApiClient.removeToken();
+          window.location.reload();
+        }
       });
     }
   }

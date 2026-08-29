@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=2.3.7">
+  <link rel="stylesheet" href="css/style.css?v=2.3.8">
 </head>
 <body>
 
@@ -24,13 +24,6 @@
       <button class="btn-icon-action btn-icon-warn" id="btn-weak-words" title="Zaif so'zlar (SRS)">⭐</button>
       <button class="btn-icon-action btn-icon-sec" id="btn-settings" title="Sozlamalar">⚙️</button>
       <div class="user-pill" id="user-name-badge">Guest</div>
-      <button class="btn-icon-action btn-icon-dan" id="btn-logout" title="Akkauntdan chiqish">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-          <polyline points="16 17 21 12 16 7"></polyline>
-          <line x1="21" y1="12" x2="9" y2="12"></line>
-        </svg>
-      </button>
     </div>
   </header>
 
@@ -271,6 +264,17 @@
           <button type="submit" class="btn btn-primary" style="flex: 1;">Saqlash</button>
           <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="window.app.closeModal('settings-modal')">Bekor qilish</button>
         </div>
+
+        <div style="margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+          <button type="button" class="btn" id="btn-modal-logout" style="width: 100%; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            Akkauntdan chiqish
+          </button>
+        </div>
       </form>
     </div>
   </div>
@@ -333,9 +337,9 @@
   </div>
 
   <!-- Scripts with cache busters -->
-  <script src="js/api.js?v=2.3.7"></script>
-  <script src="js/audio.js?v=2.3.7"></script>
-  <script src="js/matrix_game.js?v=2.3.7"></script>
-  <script src="js/app.js?v=2.3.7"></script>
+  <script src="js/api.js?v=2.3.8"></script>
+  <script src="js/audio.js?v=2.3.8"></script>
+  <script src="js/matrix_game.js?v=2.3.8"></script>
+  <script src="js/app.js?v=2.3.8"></script>
 </body>
 </html>

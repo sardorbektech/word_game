@@ -185,6 +185,7 @@ class MatrixGameEngine {
     if (!this.gridContainer || !this.roundData) return;
     this.gridContainer.innerHTML = "";
     this.clearSvgLines();
+    this.gridTilesMap = {};
 
     const dimension = this.roundData.grid_dimension || this.roundData.grid.length;
     this.gridContainer.style.gridTemplateColumns = `repeat(${dimension}, 1fr)`;
@@ -229,6 +230,8 @@ class MatrixGameEngine {
         tile.dataset.char = char;
         tile.style.fontSize = fontSize;
         tile.style.borderRadius = borderRadius;
+
+        this.gridTilesMap[`${r}_${c}`] = tile;
 
         // Mouse Listeners
         tile.addEventListener("mousedown", (e) => {
@@ -279,6 +282,10 @@ class MatrixGameEngine {
       try { window.soundEngine.ensureContext(); } catch (e) {}
     }
 
+    if (this.gridContainer) {
+      this.gridRect = this.gridContainer.getBoundingClientRect();
+    }
+
     this.isDragging = true;
     this.selectedPath = [{ row, col, char, element: tile }];
     tile.classList.add("selected");
@@ -324,15 +331,30 @@ class MatrixGameEngine {
   }
 
   handleTouchMove(e) {
-    if (!this.isDragging || this.isPaused) return;
+    if (!this.isDragging || this.isPaused || !this.roundData) return;
     const touch = e.touches[0];
-    const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
-    
-    if (targetEl && targetEl.classList.contains("matrix-tile")) {
-      const row = parseInt(targetEl.dataset.row);
-      const col = parseInt(targetEl.dataset.col);
-      const char = targetEl.dataset.char;
-      this.handleDragEnter(row, col, char, targetEl);
+
+    if (!this.gridRect) {
+      this.gridRect = this.gridContainer.getBoundingClientRect();
+    }
+
+    const dimension = this.roundData.grid_dimension || this.roundData.grid.length;
+    const relX = touch.clientX - this.gridRect.left;
+    const relY = touch.clientY - this.gridRect.top;
+
+    if (relX < 0 || relX >= this.gridRect.width || relY < 0 || relY >= this.gridRect.height) {
+      return;
+    }
+
+    const col = Math.floor((relX / this.gridRect.width) * dimension);
+    const row = Math.floor((relY / this.gridRect.height) * dimension);
+
+    if (row >= 0 && row < dimension && col >= 0 && col < dimension) {
+      const tile = this.gridTilesMap ? this.gridTilesMap[`${row}_${col}`] : null;
+      if (tile) {
+        const char = tile.dataset.char;
+        this.handleDragEnter(row, col, char, tile);
+      }
     }
   }
 
@@ -419,28 +441,43 @@ class MatrixGameEngine {
       return;
     }
 
-    const wrapperRect = this.svgOverlay.getBoundingClientRect();
-    const points = this.selectedPath.map(p => {
-      const rect = p.element.getBoundingClientRect();
-      const x = rect.left + rect.width / 2 - wrapperRect.left;
-      const y = rect.top + rect.height / 2 - wrapperRect.top;
-      return `${x},${y}`;
-    }).join(" ");
+    if (this.animFrameId) {
+      cancelAnimationFrame(this.animFrameId);
+    }
 
-    this.svgOverlay.innerHTML = `
-      <polyline
-        points="${points}"
-        fill="none"
-        stroke="#00f2fe"
-        stroke-width="5"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        style="filter: drop-shadow(0 0 8px rgba(0, 242, 254, 0.8)); opacity: 0.85;"
-      />
-    `;
+    this.animFrameId = requestAnimationFrame(() => {
+      if (!this.svgOverlay || this.selectedPath.length <= 1) {
+        this.clearSvgLines();
+        return;
+      }
+
+      const wrapperRect = this.svgOverlay.getBoundingClientRect();
+      const points = this.selectedPath.map(p => {
+        const rect = p.element.getBoundingClientRect();
+        const x = (rect.left + rect.width / 2 - wrapperRect.left).toFixed(1);
+        const y = (rect.top + rect.height / 2 - wrapperRect.top).toFixed(1);
+        return `${x},${y}`;
+      }).join(" ");
+
+      this.svgOverlay.innerHTML = `
+        <polyline
+          points="${points}"
+          fill="none"
+          stroke="#00f2fe"
+          stroke-width="5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          style="filter: drop-shadow(0 0 8px rgba(0, 242, 254, 0.8)); opacity: 0.85;"
+        />
+      `;
+    });
   }
 
   clearSvgLines() {
+    if (this.animFrameId) {
+      cancelAnimationFrame(this.animFrameId);
+      this.animFrameId = null;
+    }
     if (this.svgOverlay) {
       this.svgOverlay.innerHTML = "";
     }

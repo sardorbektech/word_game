@@ -141,6 +141,13 @@ class ApiClient {
     return await this.request("/api/settings");
   }
 
+  static async updateSettings(settingsData) {
+    return await this.request("/api/settings", {
+      method: "PUT",
+      body: JSON.stringify(settingsData)
+    });
+  }
+
   // Health & Ping
   static async ping() {
     try {
