@@ -134,9 +134,9 @@ class AppController {
       btnResume.addEventListener("click", () => window.matrixGame.togglePause());
     }
 
-    const btnLearn = document.getElementById("btn-learn-word");
-    if (btnLearn) {
-      btnLearn.addEventListener("click", () => window.matrixGame.markCurrentWordAsLearned());
+    const btnHint = document.getElementById("btn-hint-word") || document.getElementById("btn-learn-word");
+    if (btnHint) {
+      btnHint.addEventListener("click", () => window.matrixGame.giveHint());
     }
 
     const btnNextRound = document.getElementById("btn-next-round");

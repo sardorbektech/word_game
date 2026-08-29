@@ -752,6 +752,21 @@ body.in-game .main-container {
   animation: shakeGrid 0.35s ease;
 }
 
+.matrix-cell.hint-flash, .matrix-tile.hint-flash {
+  background: rgba(245, 158, 11, 0.45) !important;
+  border-color: var(--accent-gold) !important;
+  color: #fff !important;
+  box-shadow: 0 0 18px rgba(245, 158, 11, 0.95) !important;
+  transform: scale(1.1);
+  animation: hintPulse 0.5s ease infinite alternate;
+  z-index: 9;
+}
+
+@keyframes hintPulse {
+  0% { transform: scale(1); box-shadow: 0 0 8px rgba(245, 158, 11, 0.5); }
+  100% { transform: scale(1.12); box-shadow: 0 0 22px rgba(245, 158, 11, 1); }
+}
+
 @keyframes tileBounce {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.15); }

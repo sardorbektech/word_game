@@ -10,6 +10,7 @@ class MatrixGameEngine {
     this.isDragging = false;
     this.mistakeCount = 0;
     this.learnedWordsInRound = new Set();
+    this.wordHintsCount = {}; // Map of wordIndex -> count of hints requested
     
     // Timer state
     this.activeTimeSeconds = 0;
@@ -55,6 +56,7 @@ class MatrixGameEngine {
     this.isDragging = false;
     this.mistakeCount = 0;
     this.learnedWordsInRound.clear();
+    this.wordHintsCount = {};
     this.activeTimeSeconds = 0;
     this.isPaused = false;
 
@@ -128,6 +130,15 @@ class MatrixGameEngine {
     this.directExit();
   }
 
+  getSlotText(item, index) {
+    if (index < this.currentWordIndex) {
+      return item.word;
+    }
+    const hints = this.wordHintsCount[index] || 0;
+    const chars = item.word.split("");
+    return chars.map((ch, i) => (i < hints ? ch : "_")).join(" ");
+  }
+
   renderAssemblyBar() {
     if (!this.assemblyBarEl || !this.roundData) return;
     this.assemblyBarEl.innerHTML = "";
@@ -139,15 +150,13 @@ class MatrixGameEngine {
 
       if (index < this.currentWordIndex) {
         slot.classList.add("completed");
-        slot.textContent = item.word;
       } else if (index === this.currentWordIndex) {
         slot.classList.add("active");
-        slot.textContent = "_ ".repeat(item.word.length).trim();
       } else {
         slot.classList.add("pending");
-        slot.textContent = "_ ".repeat(item.word.length).trim();
       }
 
+      slot.textContent = this.getSlotText(item, index);
       this.assemblyBarEl.appendChild(slot);
     });
   }
@@ -161,14 +170,13 @@ class MatrixGameEngine {
       slot.className = "word-slot";
       if (index < this.currentWordIndex) {
         slot.classList.add("completed");
-        slot.textContent = item.word;
       } else if (index === this.currentWordIndex) {
         slot.classList.add("active");
-        slot.textContent = "_ ".repeat(item.word.length).trim();
       } else {
         slot.classList.add("pending");
-        slot.textContent = "_ ".repeat(item.word.length).trim();
       }
+
+      slot.textContent = this.getSlotText(item, index);
     });
   }
 
@@ -255,6 +263,8 @@ class MatrixGameEngine {
           window.soundEngine.playMistake();
         } else if (action === "victory" && typeof window.soundEngine.playVictory === "function") {
           window.soundEngine.playVictory();
+        } else if (action === "hint" && typeof window.soundEngine.playHint === "function") {
+          window.soundEngine.playHint();
         }
       } catch (e) {
         console.warn("Sound playback skipped:", e);
@@ -435,14 +445,45 @@ class MatrixGameEngine {
     }
   }
 
-  markCurrentWordAsLearned() {
-    if (!this.roundData) return;
-    const currentWord = this.roundData.words[this.currentWordIndex]?.word;
-    if (currentWord) {
-      this.learnedWordsInRound.add(currentWord);
-      ApiClient.markWordWeak(currentWord).catch(console.error);
-      alert(`"${currentWord}" so'zi zaif so'zlar ro'yxatiga qo'shildi!`);
+  giveHint() {
+    if (!this.roundData || this.currentWordIndex >= this.roundData.words.length) return;
+    const currentItem = this.roundData.words[this.currentWordIndex];
+    if (!currentItem) return;
+
+    const wordLen = currentItem.word.length;
+    const currentHints = this.wordHintsCount[this.currentWordIndex] || 0;
+
+    if (currentHints >= wordLen) {
+      return;
     }
+
+    const nextHints = currentHints + 1;
+    this.wordHintsCount[this.currentWordIndex] = nextHints;
+
+    // Rule: "so'zni esa zaif so'zlar 2-harfni ham so'ragandan keyin qo'shilsin"
+    if (nextHints >= 2 && !this.learnedWordsInRound.has(currentItem.word)) {
+      this.learnedWordsInRound.add(currentItem.word);
+      ApiClient.markWordWeak(currentItem.word).catch(console.error);
+    }
+
+    // Update the assembly slot display
+    this.updateAssemblyBarSlots();
+
+    // Highlight matrix tile for the revealed letter
+    if (currentItem.path && currentItem.path[nextHints - 1]) {
+      const [r, c] = currentItem.path[nextHints - 1];
+      const tile = document.querySelector(`.matrix-tile[data-row="${r}"][data-col="${c}"]`);
+      if (tile) {
+        tile.classList.add("hint-flash");
+        setTimeout(() => tile.classList.remove("hint-flash"), 1200);
+      }
+    }
+
+    this.playSound("hint");
+  }
+
+  markCurrentWordAsLearned() {
+    this.giveHint();
   }
 
   startTimer() {
