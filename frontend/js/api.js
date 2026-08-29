@@ -2,7 +2,7 @@
  * API Client for Adaptive English Sentence Reconstruction Game
  */
 
-const API_BASE = "";
+const API_BASE = window.API_BASE || localStorage.getItem("custom_api_base") || "";
 
 class ApiClient {
   static getToken() {
