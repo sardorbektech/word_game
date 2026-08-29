@@ -225,7 +225,7 @@ class AppController {
       this.userProfile = await ApiClient.getProfile();
       const userBadge = document.getElementById("user-name-badge");
       if (userBadge) {
-        userBadge.textContent = `👤 ${this.userProfile.username}`;
+        userBadge.textContent = this.userProfile.username || "Guest";
       }
       this.userSettings = await ApiClient.getSettings();
       window.soundEngine.enabled = this.userSettings.sound_enabled;
@@ -256,7 +256,7 @@ class AppController {
 
     // Header badge
     const headerLevel = document.getElementById("header-level-badge");
-    if (headerLevel) headerLevel.textContent = `🏆 ${this.progressSummary.current_level}`;
+    if (headerLevel) headerLevel.textContent = this.progressSummary.current_level;
   }
 
   renderLevelCards() {

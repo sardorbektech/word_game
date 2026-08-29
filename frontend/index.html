@@ -3,33 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Adaptive English - Letter Matrix Reconstruction Game</title>
+  <title>Adaptive English Matrix - Letter Matrix Reconstruction Game</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=2.3.4">
+  <link rel="stylesheet" href="css/style.css?v=2.3.5">
 </head>
 <body>
 
   <!-- Top App Navigation Header -->
+  <!-- Top App Navigation Header (Identical design to in-game top bar) -->
   <header class="app-header">
-    <div class="brand" id="brand-logo">
-      <div class="brand-icon">⚡</div>
-      <div class="brand-title">Adaptive English Matrix</div>
-    </div>
-
-    <div class="header-status">
-      <div class="badge badge-level" id="header-level-badge">🏆 A1</div>
-      <div class="badge badge-source badge-source-dataset game-source-badge" id="header-source-badge">⚪ AI Offline</div>
-      <div class="badge badge-difficulty" id="game-difficulty-badge" style="display: none;">⚡ Dif: 0.35</div>
-      <div class="badge badge-topic" id="game-topic-badge" style="display: none;">📌 General</div>
+    <div class="header-left">
+      <div class="brand" id="brand-logo" onclick="window.app.showScreen('dashboard')">
+        <div class="brand-icon">⚡</div>
+      </div>
+      <span class="game-level-pill" id="header-level-badge">A1</span>
+      <span class="ai-status-badge offline" id="header-source-badge">AI</span>
     </div>
 
     <div class="header-actions">
-      <button class="btn-icon" id="btn-weak-words" title="Zaif so'zlar (SRS)">⭐</button>
-      <button class="btn-icon" id="btn-settings" title="Sozlamalar">⚙️</button>
-      <div class="badge" id="user-name-badge" style="font-size: 12px;">👤 Guest</div>
-      <button class="btn-icon" id="btn-logout" title="Akkauntdan chiqish" style="color: var(--accent-red);">🚪</button>
+      <button class="btn-icon-action btn-icon-warn" id="btn-weak-words" title="Zaif so'zlar (SRS)">⭐</button>
+      <button class="btn-icon-action btn-icon-sec" id="btn-settings" title="Sozlamalar">⚙️</button>
+      <div class="user-pill" id="user-name-badge">Guest</div>
+      <button class="btn-icon-action btn-icon-dan" id="btn-logout" title="Akkauntdan chiqish">🚪</button>
     </div>
   </header>
 
@@ -267,9 +264,9 @@
   </div>
 
   <!-- Scripts with cache busters -->
-  <script src="js/api.js?v=2.3.4"></script>
-  <script src="js/audio.js?v=2.3.4"></script>
-  <script src="js/matrix_game.js?v=2.3.4"></script>
-  <script src="js/app.js?v=2.3.4"></script>
+  <script src="js/api.js?v=2.3.5"></script>
+  <script src="js/audio.js?v=2.3.5"></script>
+  <script src="js/matrix_game.js?v=2.3.5"></script>
+  <script src="js/app.js?v=2.3.5"></script>
 </body>
 </html>
