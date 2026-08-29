@@ -8,34 +8,42 @@ from backend.config import settings
 from backend.data.dataset import DATASET
 
 
-# Diverse creative situational contexts to prevent LLM from repeating default textbook sentences
+# Diverse high-value IT, AI, science, and cognitive growth contexts to generate rich educational sentences
 DIVERSE_SCENARIOS = [
-    "at a vibrant morning cafe or bakery drinking tea",
-    "talking about daily morning routines and healthy breakfast",
-    "family gathering and cooking a traditional evening dinner",
-    "planning a weekend nature trip or walk near the mountains",
-    "meeting a friendly new friend or neighbor in the green park",
-    "buying ripe fresh fruits and vegetables at a local bazaar",
-    "enjoying cozy rainy weather at home with a hot drink",
-    "discussing an exciting creative hobby, sport, or game",
-    "riding a bicycle through the clean and sunny city streets",
-    "reading an inspiring adventure book in a quiet library",
-    "caring for a playful pet or watching birds in the garden",
-    "arriving at a modern railway station or bright airport",
-    "learning something fascinating and useful in a classroom",
-    "listening to beautiful relaxing melodies in the evening",
-    "making a handmade art piece or repairing household items",
-    "celebrating a cheerful birthday gathering with close friends",
-    "ordering delicious meal and desserts at a cozy restaurant",
-    "visiting a historic architectural museum or modern exhibition",
-    "cleaning and decorating a bright and welcoming room",
-    "watching an interesting nature documentary about oceans",
-    "watering colorful garden flowers and tall green trees",
-    "taking a refreshing brisk walk in the cool morning air",
-    "discussing memorable journeys and visiting famous cities",
-    "shopping for comfortable seasonal clothes and warm shoes"
-]
+    # AI & Modern Technology
+    "explaining how neural networks and large language models process human text",
+    "discussing ethical AI development, algorithmic bias, and data privacy",
+    "building an intelligent automation workflow to eliminate repetitive tasks",
+    "analyzing how autonomous systems and robotics are transforming smart cities",
+    "evaluating computer vision algorithms used in medical diagnostics",
 
+    # Software Engineering & Computing
+    "debugging a complex asynchronous API service and optimizing response latency",
+    "comparing microservices architecture versus modular monolithic backend design",
+    "implementing robust database indexing to speed up multi-table SQL queries",
+    "collaborating on a Git version control branch during an open-source code review",
+    "setting up secure continuous integration and automated deployment pipelines",
+
+    # Space, Physics & Deep Science
+    "exploring how Earth observation satellites monitor global climate and agriculture",
+    "discussing quantum computing principles like superposition and cryptography",
+    "analyzing how renewable energy grids store excess solar and wind power",
+    "studying the mechanics of black holes, gravity waves, and deep space exploration",
+    "understanding how CRISPR gene editing could eliminate hereditary diseases",
+
+    # Human Biology, Psychology & Brain Science
+    "examining how deep sleep stages help the human brain consolidate long-term memory",
+    "discussing dopamine pathways, habit formation, and digital detox strategies",
+    "explaining neuroplasticity and how adults effectively acquire complex new skills",
+    "analyzing how proper hydration and nutrition directly boost daily cognitive focus",
+    "understanding how mindfulness and deliberate breathing lower stress hormones",
+
+    # Critical Thinking, Economics & Mental Models
+    "applying first-principles thinking to break down difficult modern challenges",
+    "discussing the power of compound interest and foundational financial literacy",
+    "analyzing cognitive biases like confirmation bias during decision-making",
+    "debating the balance between rapid technological innovation and societal safety"
+]
 
 RECENT_SERVED_SENTENCES: List[str] = []
 
@@ -117,12 +125,32 @@ class LLMService:
         random_seed = random.randint(10000, 999999)
 
         level_guidance = {
-            "A1": "Beginner level: Simple basic grammar (e.g. Present Simple), daily life words, 4-6 words.",
-            "A2": "Elementary level: Past simple, basic conjunctions, 5-7 words.",
-            "B1": "Intermediate level: Future forms, modal verbs, present perfect, 6-8 words.",
-            "B2": "Upper-intermediate: Conditionals, passive voice, phrasal verbs, 7-9 words.",
-            "C1": "Advanced level: Sophisticated vocabulary, subjunctive/inversion, nuanced idioms, 7-10 words."
-        }.get(level.upper(), "Adaptive CEFR English sentence, 5-9 words.")
+    "A1": (
+        "Beginner level: Focus on simple everyday vocabulary (food, family, routines), "
+        "basic sentence structures (Subject + Verb + Object), and Present Simple/Continuous. "
+        "Keep sentences clear, direct, and limited to 4-5 words."
+    ),
+    "A2": (
+        "Elementary level: Focus on familiar topics, past routines, and simple future plans. "
+        "Use Past Simple, basic modal verbs (can, must, should), and simple conjunctions "
+        "(and, but, because, so). Length: 5-6 words."
+    ),
+    "B1": (
+        "Intermediate level: Focus on personal opinions, experiences, and ambitions. "
+        "Use Present Perfect, comparative/superlative structures, modal verbs of deduction, "
+        "and basic complex clauses (relative clauses, 'if' clauses). Length: 6-7 words."
+    ),
+    "B2": (
+        "Upper-Intermediate level: Focus on abstract ideas, formal/informal nuances, "
+        "and technical context. Use mixed conditionals, passive voice, phrasal verbs, "
+        "and complex linkers (although, whereas, in spite of). Length: 7-8 words."
+    ),
+    "C1": (
+        "Advanced level: Focus on high-level fluency, subtle tone, and professional/academic contexts. "
+        "Use advanced collocations, idiomatic expressions, inversion, subjunctive mood, "
+        "and varied cleft sentences. Length: 7-9 words."
+    )
+    }.get(level.upper(), "Adaptive CEFR English sentence, 5-7 words.")
 
         avoid_clause = ""
         if recent_sentences:
