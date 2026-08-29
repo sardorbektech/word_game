@@ -37,6 +37,9 @@ DIVERSE_SCENARIOS = [
 ]
 
 
+RECENT_SERVED_SENTENCES: List[str] = []
+
+
 class LLMService:
     """Generates adaptive game content via OpenAI API or curated dataset with 100% diversity."""
 
@@ -50,6 +53,8 @@ class LLMService:
         recent_sentences: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """Requests fresh unique content from OpenAI or returns non-repeated sentence from curated dataset."""
+        combined_recent = list(set((recent_sentences or []) + RECENT_SERVED_SENTENCES[-25:]))
+
         if settings.OPENAI_API_KEY and settings.OPENAI_API_KEY.strip():
             try:
                 res = cls._call_openai(
@@ -57,16 +62,36 @@ class LLMService:
                     difficulty=difficulty,
                     topic=topic,
                     weak_words=weak_words or [],
-                    recent_sentences=recent_sentences or []
+                    recent_sentences=combined_recent
                 )
+                # If OpenAI happens to return a recent sentence, retry once
+                recent_lower = set(s.strip().lower() for s in combined_recent)
+                if res.get("target_text", "").strip().lower() in recent_lower:
+                    res = cls._call_openai(
+                        level=level,
+                        difficulty=difficulty,
+                        topic=topic,
+                        weak_words=weak_words or [],
+                        recent_sentences=combined_recent
+                    )
+
                 res["content_source"] = "ai"
+                cls._record_served_sentence(res.get("target_text", ""))
                 return res
             except Exception as e:
                 print(f"[LLMService] OpenAI call error: {e}. Using offline dataset.")
 
-        res = cls._get_fallback_sentence(level, topic, weak_words or [], recent_sentences or [])
+        res = cls._get_fallback_sentence(level, topic, weak_words or [], combined_recent)
         res["content_source"] = "dataset"
+        cls._record_served_sentence(res.get("target_text", ""))
         return res
+
+    @classmethod
+    def _record_served_sentence(cls, text: str):
+        if text and text.strip():
+            RECENT_SERVED_SENTENCES.append(text.strip())
+            if len(RECENT_SERVED_SENTENCES) > 50:
+                RECENT_SERVED_SENTENCES.pop(0)
 
     @classmethod
     def _call_openai(

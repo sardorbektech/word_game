@@ -343,21 +343,11 @@ class AppController {
 
   async prefetchNextRound(level = null) {
     const targetLevel = level || this.activeGameLevel || "A1";
-    if (this.isPrefetching[targetLevel]) return;
-    this.isPrefetching[targetLevel] = true;
-
-    try {
-      const prefetchPromise = ApiClient.generateGame(targetLevel);
-      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Prefetch timeout")), 3000));
-      const data = await Promise.race([prefetchPromise, timeoutPromise]);
-      if (data && data.words && data.words.length > 0) {
-        this.prefetchedRounds[targetLevel] = data;
-      }
-    } catch (e) {
-      console.log(`[Prefetch] Background prefetch for ${targetLevel} fell back or timed out:`, e);
-    } finally {
-      this.isPrefetching[targetLevel] = false;
-    }
+    this.pendingPrefetchLevel = targetLevel;
+    this.pendingPrefetchPromise = ApiClient.generateGame(targetLevel).catch(err => {
+      console.log(`[Prefetch] Background prefetch for ${targetLevel} skipped/fell back:`, err);
+      return null;
+    });
   }
 
   async startNewGame(level = null) {
@@ -369,17 +359,6 @@ class AppController {
 
     this.showScreen("game");
 
-    // 1. If round already pre-fetched in memory, start IMMEDIATELY (0ms wait time!)
-    if (this.prefetchedRounds[targetLevel]) {
-      const cachedRound = this.prefetchedRounds[targetLevel];
-      delete this.prefetchedRounds[targetLevel];
-      window.matrixGame.loadRound(cachedRound);
-      // Immediately start background prefetch for the next round!
-      this.prefetchNextRound(targetLevel);
-      return;
-    }
-
-    // 2. Otherwise show sleek AI loading status on sentence card
     const srcEl = document.getElementById("source-sentence");
     if (srcEl) {
       srcEl.classList.add("sentence-loading");
@@ -393,16 +372,19 @@ class AppController {
     }
 
     try {
-      // Fetch with 3.0s timeout
-      const fetchPromise = ApiClient.generateGame(targetLevel);
-      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("AI timeout")), 3000));
-      
-      let roundData;
-      try {
-        roundData = await Promise.race([fetchPromise, timeoutPromise]);
-      } catch (err) {
-        console.warn("AI response exceeded 3s, requesting fast dataset fallback:", err);
-        roundData = await ApiClient.generateGame(targetLevel, "General", "auto");
+      let roundData = null;
+
+      // 1. If background prefetch is already running or completed for this level, use it!
+      if (this.pendingPrefetchPromise && this.pendingPrefetchLevel === targetLevel) {
+        const promise = this.pendingPrefetchPromise;
+        this.pendingPrefetchPromise = null;
+        this.pendingPrefetchLevel = null;
+        roundData = await promise;
+      }
+
+      // 2. If no prefetch or prefetch returned empty, fetch freshly
+      if (!roundData || !roundData.words || roundData.words.length === 0) {
+        roundData = await ApiClient.generateGame(targetLevel);
       }
 
       if (roundData && roundData.level) {
@@ -412,7 +394,7 @@ class AppController {
 
       window.matrixGame.loadRound(roundData);
 
-      // Start prefetching next round in background
+      // 3. Immediately queue background prefetch for the next round
       this.prefetchNextRound(targetLevel);
     } catch (err) {
       console.error("Game load error:", err);
