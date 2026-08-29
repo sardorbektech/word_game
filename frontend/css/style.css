@@ -1,12 +1,13 @@
 /* ==========================================================================
-   Adaptive English Sentence Reconstruction Game - Modern Theme & Stylesheet
+   Adaptive English Sentence Reconstruction Game - Modern Multi-Theme Stylesheet
    ========================================================================== */
 
-:root {
+/* 1. Tech Mode (Kiber Neon - Default) */
+:root, [data-theme="tech"] {
   --bg-primary: #0a0f1d;
   --bg-secondary: #131d36;
-  --bg-card: rgba(23, 34, 61, 0.75);
-  --bg-glass: rgba(30, 45, 80, 0.55);
+  --bg-card: rgba(23, 34, 61, 0.85);
+  --bg-glass: rgba(30, 45, 80, 0.65);
   --border-color: rgba(255, 255, 255, 0.1);
   --border-glow: rgba(79, 140, 255, 0.35);
 
@@ -34,6 +35,71 @@
   --radius-md: 14px;
   --radius-lg: 20px;
   --radius-full: 9999px;
+  --body-bg-gradient: radial-gradient(circle at 15% 15%, rgba(79, 140, 255, 0.12) 0%, transparent 40%), radial-gradient(circle at 85% 85%, rgba(112, 83, 255, 0.12) 0%, transparent 40%);
+}
+
+/* 2. Dark Mode (Minimalist Obsidian Dark) */
+[data-theme="dark"] {
+  --bg-primary: #09090b;
+  --bg-secondary: #121215;
+  --bg-card: #18181b;
+  --bg-glass: rgba(24, 24, 27, 0.85);
+  --border-color: #27272a;
+  --border-glow: rgba(255, 255, 255, 0.15);
+
+  --primary: #6366f1;
+  --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  --accent-cyan: #38bdf8;
+  --accent-green: #22c55e;
+  --accent-emerald: #4ade80;
+  --accent-gold: #fbbf24;
+  --accent-red: #f87171;
+  --accent-purple: #c084fc;
+
+  --text-main: #f4f4f5;
+  --text-muted: #a1a1aa;
+  --text-dim: #71717a;
+
+  --tile-bg: #27272a;
+  --tile-active: #6366f1;
+  --tile-correct: #15803d;
+  --tile-wrong: #b91c1c;
+
+  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.7);
+  --shadow-glow: 0 0 15px rgba(99, 102, 241, 0.3);
+  --body-bg-gradient: none;
+}
+
+/* 3. White Mode (Crisp & Clean Light Mode) */
+[data-theme="white"] {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-card: #f1f5f9;
+  --bg-glass: rgba(255, 255, 255, 0.9);
+  --border-color: #cbd5e1;
+  --border-glow: rgba(37, 99, 235, 0.2);
+
+  --primary: #2563eb;
+  --primary-gradient: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+  --accent-cyan: #0284c7;
+  --accent-green: #16a34a;
+  --accent-emerald: #059669;
+  --accent-gold: #d97706;
+  --accent-red: #dc2626;
+  --accent-purple: #7c3aed;
+
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-dim: #64748b;
+
+  --tile-bg: #e2e8f0;
+  --tile-active: #2563eb;
+  --tile-correct: #16a34a;
+  --tile-wrong: #dc2626;
+
+  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.06);
+  --shadow-glow: 0 0 15px rgba(37, 99, 235, 0.2);
+  --body-bg-gradient: radial-gradient(circle at 15% 15%, rgba(37, 99, 235, 0.06) 0%, transparent 40%), radial-gradient(circle at 85% 85%, rgba(79, 70, 229, 0.06) 0%, transparent 40%);
 }
 
 * {
@@ -46,15 +112,14 @@
 }
 
 body {
-  background: var(--bg-primary);
-  background-image: 
-    radial-gradient(circle at 15% 15%, rgba(79, 140, 255, 0.12) 0%, transparent 40%),
-    radial-gradient(circle at 85% 85%, rgba(112, 83, 255, 0.12) 0%, transparent 40%);
+  background-color: var(--bg-primary);
+  background-image: var(--body-bg-gradient);
   color: var(--text-main);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 /* Header & Nav - Identical compact design to in-game top bar */
@@ -904,14 +969,19 @@ body.in-game .main-container {
 }
 
 .form-input, .form-select {
-  background: rgba(10, 15, 29, 0.8);
+  background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: 12px 16px;
-  color: #fff;
+  color: var(--text-main);
   font-size: 15px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.form-select option {
+  background: var(--bg-card);
+  color: var(--text-main);
 }
 
 .form-input:focus, .form-select:focus {

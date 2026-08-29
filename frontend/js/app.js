@@ -24,7 +24,20 @@ class AppController {
     this.userSettings = null;
     this.activeGameLevel = "A1";
 
+    this.initTheme();
     this.initEventListeners();
+  }
+
+  initTheme() {
+    const savedTheme = localStorage.getItem("word_game_theme") || "tech";
+    this.applyTheme(savedTheme);
+  }
+
+  applyTheme(theme) {
+    if (["tech", "dark", "white"].includes(theme)) {
+      document.documentElement.setAttribute("data-theme", theme);
+      localStorage.setItem("word_game_theme", theme);
+    }
   }
 
   async init() {
@@ -173,8 +186,11 @@ class AppController {
     if (formSettings) {
       formSettings.addEventListener("submit", async (e) => {
         e.preventDefault();
+        const theme = document.getElementById("settings-theme").value;
         const topic = document.getElementById("settings-topic").value;
         const sound = document.getElementById("settings-sound").checked;
+
+        this.applyTheme(theme);
 
         try {
           await ApiClient.updateSettings({
@@ -410,6 +426,10 @@ class AppController {
 
   async openSettingsModal() {
     this.openModal("settings-modal");
+    const currentTheme = localStorage.getItem("word_game_theme") || "tech";
+    const themeSelect = document.getElementById("settings-theme");
+    if (themeSelect) themeSelect.value = currentTheme;
+
     try {
       const settings = await ApiClient.getSettings();
       document.getElementById("settings-topic").value = settings.preferred_topic || "General";
