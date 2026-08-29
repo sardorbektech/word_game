@@ -153,6 +153,11 @@ class AppController {
     }
 
     // Header buttons
+    const btnHowToPlay = document.getElementById("btn-how-to-play");
+    if (btnHowToPlay) {
+      btnHowToPlay.addEventListener("click", () => this.openModal("how-to-play-modal"));
+    }
+
     const btnWeakWords = document.getElementById("btn-weak-words");
     if (btnWeakWords) {
       btnWeakWords.addEventListener("click", () => this.openWeakWordsModal());

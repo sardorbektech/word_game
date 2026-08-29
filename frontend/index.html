@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=2.3.5">
+  <link rel="stylesheet" href="css/style.css?v=2.3.6">
 </head>
 <body>
 
@@ -15,9 +15,7 @@
   <!-- Top App Navigation Header (Identical design to in-game top bar) -->
   <header class="app-header">
     <div class="header-left">
-      <div class="brand" id="brand-logo" onclick="window.app.showScreen('dashboard')">
-        <div class="brand-icon">⚡</div>
-      </div>
+      <button class="btn-icon-action btn-icon-warn" id="btn-how-to-play" title="O'yin qoidalari" style="font-size: 16px; font-weight: 800;">❗</button>
       <span class="game-level-pill" id="header-level-badge">A1</span>
       <span class="ai-status-badge offline" id="header-source-badge">AI</span>
     </div>
@@ -263,10 +261,45 @@
     </div>
   </div>
 
+  <!-- 6. How to Play Modal (O'yin qoidalari) -->
+  <div class="modal-overlay" id="how-to-play-modal">
+    <div class="modal-card" style="max-width: 480px; text-align: left;">
+      <div class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+        <span>❗ O'yin Qoidalari</span>
+      </div>
+
+      <div class="rules-content" style="display: flex; flex-direction: column; gap: 10px; margin: 16px 0; font-size: 13.5px; line-height: 1.5; color: var(--text-main);">
+        <div style="background: rgba(255, 255, 255, 0.04); padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+          <strong style="color: var(--accent-cyan); display: block; margin-bottom: 3px;">1. Asosiy Maqsad:</strong>
+          Yuqorida ko'rsatilgan o'zbekcha gapning inglizcha tarjimasini so'zma-so'z to'g'ri grammatik tartibda harflar matritsasidan yig'ing.
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.04); padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+          <strong style="color: var(--accent-gold); display: block; margin-bottom: 3px;">2. Harflarni Birlashtirish:</strong>
+          Barmoqni (yoki sichqonchani) harf ustiga bosib, qo'shni kataklarga <strong>faqat to'g'ri yo'nalishda</strong> (o'ngga, chapga, yuqoriga yoki pastga) suring. Diagonal surish mumkin emas.
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.04); padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+          <strong style="color: var(--accent-emerald); display: block; margin-bottom: 3px;">3. Ketma-ketlik:</strong>
+          Gapdagi so'zlarni navbatma-navbat yig'ing. To'g'ri topilgan har bir so'z yuqoridagi katakka yashil bo'lib joylashadi.
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.04); padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+          <strong style="color: var(--accent-purple); display: block; margin-bottom: 3px;">4. 💡 Yordam Lampochkasi:</strong>
+          So'zni topishga qiynalsangiz, 💡 lampochkani bosing — u navbatdagi 1 ta harfni ochib beradi. Agar bitta so'z uchun 2 ta harf so'rasangiz, so'z avtomatik ravishda Zaif so'zlar ro'yxatiga qo'shiladi.
+        </div>
+      </div>
+
+      <button class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 15px;" onclick="window.app.closeModal('how-to-play-modal')">
+        Tushunarli 👍
+      </button>
+    </div>
+  </div>
+
   <!-- Scripts with cache busters -->
-  <script src="js/api.js?v=2.3.5"></script>
-  <script src="js/audio.js?v=2.3.5"></script>
-  <script src="js/matrix_game.js?v=2.3.5"></script>
-  <script src="js/app.js?v=2.3.5"></script>
+  <script src="js/api.js?v=2.3.6"></script>
+  <script src="js/audio.js?v=2.3.6"></script>
+  <script src="js/matrix_game.js?v=2.3.6"></script>
+  <script src="js/app.js?v=2.3.6"></script>
 </body>
 </html>
